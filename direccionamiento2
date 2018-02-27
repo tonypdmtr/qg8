@@ -55,7 +55,7 @@ mainLoop:
             mov 	,X+,var_sb		;IX+
             clrx
             cbeq	var_sb,X+,FIN		;IX1+
-            bcs		FIN
+            bcs		FIN			;REL
             
 FIN
 
