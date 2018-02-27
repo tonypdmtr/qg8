@@ -43,11 +43,11 @@ mainLoop:
             lda     #2				;IMM
             sta     var_sb			;DIR
             sta		var_b			;EXT
-            sec						;INH
+            sec					;INH
             clrh			
             ldx		#$68	
             txs
-            sta		,X				;IX
+            sta		,X			;IX
             sta		var_sb,X		;IX1
             sta		var_b,X			;IX2
             sta		var_sb,SP		;SP1
