@@ -28,7 +28,7 @@
 MY_ZEROPAGE: SECTION  SHORT         ; Insert here your data definition
 var_sb:       ds.b   1
 datos:		SECTION
-var_b:		ds.b	1				; Se reserva 1 byte en la Z-RAM para cte1
+var_b:		ds.b	1			
 
 ; code section
 MyCode:     SECTION
