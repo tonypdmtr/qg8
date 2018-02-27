@@ -40,9 +40,9 @@ _Startup:
 
 mainLoop:
             ; Insert your code here
-            lda     #2				;IMM
-            sta     var_sb			;DIR
-            sta		var_b			;EXT
+            lda    	 #2			;IMM
+            sta    	 var_sb			;DIR
+            sta	   	 var_b			;EXT
             sec					;INH
             clrh			
             ldx		#$68	
