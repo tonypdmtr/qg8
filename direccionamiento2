@@ -1,10 +1,11 @@
 ;*******************************************************************
-;* This stationery serves as the framework for a user application. *
-;* For a more comprehensive program that demonstrates the more     *
-;* advanced functionality of this processor, please see the        *
-;* demonstration applications, located in the examples             *
-;* subdirectory of the "Freescale CodeWarrior for HC08" program    *
-;* directory.                                                      *
+;* Universidad Nacional de Colombia                                *
+;* Facultad de ingeniería mecánica y mecatrónica                   *
+;* Microcontroladores 2018-I                                       *
+;* Programador:                                                    *
+;* -Javier Mauricio Pinilla Garcia  25481244                       *
+;* Version: 1.0                                                    *
+;* Microcontrolador: MC9S08QG8CPBE                                 *
 ;* Codigo creado para la practica No 3 donde se muestran los       *
 ;* diferentes modos de direccionamiento                            *
 ;*******************************************************************
