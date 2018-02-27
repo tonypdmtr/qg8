@@ -1,0 +1,61 @@
+;*******************************************************************
+;* This stationery serves as the framework for a user application. *
+;* For a more comprehensive program that demonstrates the more     *
+;* advanced functionality of this processor, please see the        *
+;* demonstration applications, located in the examples             *
+;* subdirectory of the "Freescale CodeWarrior for HC08" program    *
+;* directory.                                                      *
+;*******************************************************************
+
+; Include derivative-specific definitions
+            INCLUDE 'derivative.inc'
+            
+
+; export symbols
+            XDEF _Startup, main
+            ; we export both '_Startup' and 'main' as symbols. Either can
+            ; be referenced in the linker .prm file or from C/C++ later on
+            
+            
+            
+            XREF __SEG_END_SSTACK   ; symbol defined by the linker for the end of the stack
+
+
+; variable/data section
+MY_ZEROPAGE: SECTION  SHORT         ; Insert here your data definition
+var_sb:       ds.b   1
+datos:		SECTION
+var_b:		ds.b	1				; Se reserva 1 byte en la Z-RAM para cte1
+
+; code section
+MyCode:     SECTION
+main:
+_Startup:
+            LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
+            TXS
+			CLI			; enable interrupts
+
+mainLoop:
+            ; Insert your code here
+            lda     #2				;IMM
+            sta     var_sb			;DIR
+            sta		var_b			;EXT
+            sec						;INH
+            clrh			
+            ldx		#$68	
+            txs
+            sta		,X				;IX
+            sta		var_sb,X		;IX1
+            sta		var_b,X			;IX2
+            sta		var_sb,SP		;SP1
+            sta		var_b,SP		;SP2
+            mov 	,X+,var_sb		;IX+
+            clrx
+            cbeq	var_sb,X+,FIN	;IX1+
+            bcs		FIN
+            
+FIN
+
+            feed_watchdog
+            BRA    mainLoop
+
