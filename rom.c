@@ -6,7 +6,6 @@
 void retardo(unsigned long delay);
 
 void main(void) {
-  EnableInterrupts;
   /* include your code here */
   SOPT1 = 0x052;
   PTADD=0b00111100;
@@ -38,7 +37,7 @@ void main(void) {
   	PTAD_PTAD3=1;		/*OE*/
   	
   }
-  else{					/*se selecicono modo r*/
+  else{					/*se selecicono modo w*/
 	  PTBD_PTBD0=1;		/*CE*/
 	  PTAD_PTAD3=0;		/*OE*/
 	  PTAD_PTAD2=1;		/*WE*/
