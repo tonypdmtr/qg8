@@ -57,7 +57,7 @@ read:		bset	0,PTBD
 			bra     r1
   		    
 r1:			lda		#00000100	;enmascarar ptb2
-			and		PTBD	;Si ptb2 esta en 0 (seleccion modo address) se repite el ciclo hasta que este en 1
+			and		PTBD	;Si ptb2 esta en 0 (modo data seleccionado, para este caso se desea modo address) se repite el ciclo hasta que este en 1
 			cmp 	#0
 			beq		r1
 			bne		r2
