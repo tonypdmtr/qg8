@@ -41,42 +41,45 @@ mainLoop:   lda     #$52
             mov     #00111100,PTADD
             mov     #00000011,PTASE
             mov     #11110001,PTBDD
-			mov     #00001110,PTBSE
+	    mov     #00001110,PTBSE
 			
-			bset    0,PTBD
-			bset    3,PTAD
+	    bset    0,PTBD
+	    bset    3,PTAD
   			
-  			lda 	#00001000  ;enmascarar ptb3
-  			and 	PTBD
+  	    lda 	#00001000  ;enmascarar ptb3
+  	    and 	PTBD
   		    cmp     #00001000
   		    beq     read ;
   		    bne     write ;
   		    
-read:		bset	0,PTBD
+read:			bset	0,PTBD
 			bset	3,PTAD
 			bra     r1
   		    
 r1:			lda		#00000100   ;enmascarar ptb2
 			and		PTBD	    ;Si ptb2 esta en 0 (modo data seleccionado, para este caso se desea modo address) se repite el ciclo hasta que este en 1
+			;retardo(0xFF);
 			cmp 	#0
 			beq		r1
 			bne		r2
 			
 r2:			lda		#00000010	;enmascarar ptb1
 			and		PTBD	    ;Si ptb1 esta en 0 (input disable) se repite el ciclo hasta que este en 1
+			;retardo(0xFF);
 			cmp 	#0
 			beq		r2
 			bne		r3
 			
 r3:			;PTBD_PTBD6=PTAD_PTAD0;		/*escribe en a0*/
   			;PTBD_PTBD7=PTAD_PTAD1;
+			;retardo(0xFF);
   			bclr	0,PTBD
   			bclr	3,PTAD
   			clrh
   			ldx		#01
-            sta		data_address,X ;se guarda la informacion en la parte baja de la variable
-            ;retardo
-            bset	0,PTBD
+            		sta		data_address,X ;se guarda la informacion en la parte baja de la variable
+            		;retardo
+            		bset	0,PTBD
   			bset	3,PTAD
   			BRA    mainLoop	
             
