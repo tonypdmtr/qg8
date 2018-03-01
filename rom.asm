@@ -74,7 +74,7 @@ r3:			;PTBD_PTBD6=PTAD_PTAD0;		/*escribe en a0*/
   			bclr	3,PTAD
   			clrh
   			ldx		#01
-            sta		data_address,X;
+            sta		data_address,X ; se guarda la informacion en la parte baja de la variable
             ;retardo
             bset	0,PTBD
   			bset	3,PTAD
@@ -89,7 +89,7 @@ write:		bset	0,PTBD
 			BRA		w1
 			
 w1:			lda		#00000100	;enmascarar ptb2
-			and		PTBD	;Si ptb2 esta en 0 (seleccion modo address) se repite el ciclo hasta que este en 1
+			and		PTBD	;Si ptb2 esta en 0 (seleccion modo address) se repite el ciclo hasta que este en 1, analogo a r1
 			cmp 	#0
 			beq		w1
 			bne		w2
@@ -124,8 +124,7 @@ w6:			;PTBD_PTBD4=PTAD_PTAD0;			/*escribe en I/O0*/
   			;retardo(0xFF);
   			bset	2,PTAD
   			;retardo(0xFF);
-  			bset	0,ptbd
+  			bset	0,PTBD
   			bclr	3,PTAD
   			BRA    mainLoop		
-
 
