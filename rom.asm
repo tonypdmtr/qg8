@@ -6,8 +6,8 @@
 ;* -Javier Mauricio Pinilla Garcia  25481244                       *
 ;* Version: 1.0                                                    *
 ;* Microcontrolador: MC9S08QG8CPBE                                 *
-;* Codigo creado para la practica No 3 donde se muestran los       *
-;* diferentes modos de direccionamiento                            *
+;* Lectura y escritura en EEPROM at28c64b, laboratorio No 3        *
+;*                                                                 *
 ;*******************************************************************
 
 
@@ -35,7 +35,7 @@ _Startup:
             LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
             TXS
 			CLI			; enable interrupts
-
+;23456789012345678901234567890123456789
 mainLoop:   lda     #$52
             sta     SOPT1
             mov     #00111100,PTADD
@@ -46,24 +46,24 @@ mainLoop:   lda     #$52
 			bset    0,PTBD
 			bset    3,PTAD
   			
-  			lda 	#00001000	;enmascarar ptb3
+  			lda 	#00001000  ;enmascarar ptb3
   			and 	PTBD
   		    cmp     #00001000
-  		    beq     read ;read
-  		    bne     write ;else1
+  		    beq     read ;
+  		    bne     write ;
   		    
 read:		bset	0,PTBD
 			bset	3,PTAD
 			bra     r1
   		    
-r1:			lda		#00000100	;enmascarar ptb2
-			and		PTBD	;Si ptb2 esta en 0 (modo data seleccionado, para este caso se desea modo address) se repite el ciclo hasta que este en 1
+r1:			lda		#00000100   ;enmascarar ptb2
+			and		PTBD	    ;Si ptb2 esta en 0 (modo data seleccionado, para este caso se desea modo address) se repite el ciclo hasta que este en 1
 			cmp 	#0
 			beq		r1
 			bne		r2
 			
 r2:			lda		#00000010	;enmascarar ptb1
-			and		PTBD	;Si ptb1 esta en 0 (input disable) se repite el ciclo hasta que este en 1
+			and		PTBD	    ;Si ptb1 esta en 0 (input disable) se repite el ciclo hasta que este en 1
 			cmp 	#0
 			beq		r2
 			bne		r3
@@ -74,7 +74,7 @@ r3:			;PTBD_PTBD6=PTAD_PTAD0;		/*escribe en a0*/
   			bclr	3,PTAD
   			clrh
   			ldx		#01
-            sta		data_address,X ; se guarda la informacion en la parte baja de la variable
+            sta		data_address,X ;se guarda la informacion en la parte baja de la variable
             ;retardo
             bset	0,PTBD
   			bset	3,PTAD
@@ -89,13 +89,13 @@ write:		bset	0,PTBD
 			BRA		w1
 			
 w1:			lda		#00000100	;enmascarar ptb2
-			and		PTBD	;Si ptb2 esta en 0 (seleccion modo address) se repite el ciclo hasta que este en 1, analogo a r1
+			and		PTBD	    ;Si ptb2 esta en 0 (seleccion modo address) se repite el ciclo hasta que este en 1, analogo a r1
 			cmp 	#0
 			beq		w1
 			bne		w2
 			
 w2:			lda		#00000010	;enmascarar ptb1
-			and		PTBD	;Si ptb1 esta en 0 (input disable) se repite el ciclo hasta que este en 1
+			and		PTBD	    ;Si ptb1 esta en 0 (input disable) se repite el ciclo hasta que este en 1
 			cmp 	#0
 			beq		w2
 			bne		w3
@@ -115,7 +115,7 @@ w4:			lda		#00000100	;enmascarar ptb2
 
 w5:			lda		#00000010	;enmascarar ptb2			
 			and		PTBD		;si esta en 0 vuelve a w4
-			cmp		#0	;si esta en 1, input enable
+			cmp		#0	        ;si esta en 1, input enable
 			beq		w5
 			bne		w6	
 
@@ -127,4 +127,6 @@ w6:			;PTBD_PTBD4=PTAD_PTAD0;			/*escribe en I/O0*/
   			bset	0,PTBD
   			bclr	3,PTAD
   			BRA    mainLoop		
+
+
 
