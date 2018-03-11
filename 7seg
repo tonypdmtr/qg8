@@ -281,35 +281,88 @@ incDia2:	lda		#$0			;carga 0 al acumulador
 			sta		diah		;lo asigna a diah
 			jsr		incMes0		;salta a incMes0
 			
-incMes0:	lda		#9T
-			cmp		mesl		
-			beq		incMes1		
-			lda		mesl
-			add		#$1
-			sta		mesl
-			jsr		mainLoop
+incMes0:	lda		#9T			;carga 9 al acumulador
+			cmp		mesl		;compara con mesl
+			beq		incMes1		;si es igual salta a incMes1
+			lda		mesl		;carga mesl al acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		mesl		;carga el valor a mesl
+			jsr		mainLoop	;vuelve al mainLoop
 			
-incMes1:	lda		$#0
-			sta		mesl
-			lda		#1T
-			beq		incMes2
-			lda		mesh
-			add		#$1
-			sta		mesh
-			jsr 	mainLoop
+incMes1:	lda		$#0			;carga 0 en el acumulador
+			sta		mesl		;lo asigna a mesl
+			lda		#1T		;carga 1 en el acumulador
+			beq		incMes2		;si es igual salta a incMes2
+			lda		mesh		;carga mesh al acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		mesh		;lo asigna a mesh
+			jsr 	mainLoop		;vuelve al mainLoop
 			
-incMes2:	lda		#2T
-			cmp		mesl
-			blo		incMes3:
-			lda		#$0
-			sta		mesl
-			sta		meh
-			jsr		mainLoop
+incMes2:	lda		#2T			;carga 2 al acumulador
+			cmp		mesl		;compara con mesl
+			blo		incMes3:	;si es menor salta a incMes3
+			lda		#$0		;carga 0 al acumulador
+			sta		mesl		;lo asigna a mesl
+			sta		meh		;lo asigna a mesh
+			jsr		mainLoop	;vuelve al mainLoop
 			
-incMes3:	lda		mesl
-			add		#$1
-			sta		mesl
-			jsr		mainLoop
+incMes3:	lda		mesl			;carga mesl en el acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		mesl		;lo carga en mesl
+			jsr		mainLoop	;vuelve al mainLoop
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;			
+			
+incMin0: 	lda		#9T			;Carga 9 al acumulador			
+			cmp		minl		;compara con minl
+			beq		incDia1		;si minl es 9 va a incMes1
+			lda		minl		;carga minl al acumulador
+			add		#$1			;suma 1 al acumulador
+			sta		minl		;lo asigna a minl
+			jsr		mainLoop	;vuelve al main
+			
+incMin1:	lda		$#0			;carga 0 al acumulador
+			sta		dial		;lo asigna a minl 
+			lda		#6T		;carga 6 al acumulador
+			cmp		minh		;compara con minh	
+			beq		incMin2		;si es igual va a incMin2
+			lda		minh		;carga minh al acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		minh		;lo asigna a minh
+			jsr 	mainLoop	;vuelve al main
+				
+incMin2:	lda		#$0			;carga 0 al acumulador
+			sta		minh		;lo asigna a minh
+			jsr		incHora0	;salta a incHora0
+			
+incHora0:	lda		#9T			;carga 9 al acumulador
+			cmp		horal		;compara con horal
+			beq		incHora1	;si es igual salta a incHora1
+			lda		horal		;carga horal al acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		horal		;carga el valor a horal
+			jsr		mainLoop	;vuelve al mainLoop
+			
+incHora1:	lda		$#0			;carga 0 en el acumulador
+			sta		horal		;lo asigna a horal
+			lda		#2T		;carga 2 en el acumulador
+			beq		incHora2	;si es igual salta a incHora2
+			lda		horah		;carga horah al acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		mesh		;lo asigna a horah
+			jsr 	mainLoop		;vuelve al mainLoop
+			
+incHora2:	lda		#4T			;carga 4 al acumulador
+			cmp		horal		;compara con horal
+			blo		incHora3:	;si es menor salta a incHora3
+			lda		#$0		;carga 0 al acumulador
+			sta		mesl		;lo asigna a mesl
+			sta		meh		;lo asigna a mesh
+			jsr		mainLoop	;vuelve al mainLoop
+			
+incHora3:	lda		mesl			;carga mesl en el acumulador
+			add		#$1		;suma 1 al acumulador
+			sta		mesl		;lo carga en mesl
+			jsr		mainLoop	;vuelve al mainLoop
 			
 			
 			
