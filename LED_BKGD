@@ -6,8 +6,8 @@
 ;* -Javier Mauricio Pinilla Garcia  25481244                       *
 ;* Version: 1.0                                                    *
 ;* Microcontrolador: MC9S08QG8CPBE                                 *
-;* Codigo creado para la practica No 3 donde se muestran los       *
-;* diferentes modos de direccionamiento                            *
+;* Codigo para encender un LED a traves del pin de BKGD/PTA5       *
+;*                                                                 *
 ;*******************************************************************
 
 ; Include derivative-specific definitions
@@ -37,12 +37,14 @@ _Startup:
 			CLI			; enable interrupts
 
 mainLoop:   bra   init
+
 r1:	    lda #00000000
 	    sta	PTAD
-	    bra	retardo
+	    jsr	retardo
 	    lda #11111111
 	    sta	PTAD
-	    
+	    jsr retardo
+	    bra	r1
 
 
 init:       lda #01000000
@@ -56,3 +58,13 @@ init:       lda #01000000
 
             feed_watchdog
 BRA mainLoop
+
+
+retardo: 	
+			lda		#$01
+rt1:		psha
+			lda		#$ff
+rt2:		dbnza	rt2
+			pula
+			dbnza	rt1
+rts
