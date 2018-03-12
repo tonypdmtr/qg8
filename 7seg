@@ -6,6 +6,14 @@
 ;* subdirectory of the "Freescale CodeWarrior for HC08" program    *
 ;* directory.                                                      *
 ;*******************************************************************
+;*******************************************************************
+;* This stationery serves as the framework for a user application. *
+;* For a more comprehensive program that demonstrates the more     *
+;* advanced functionality of this processor, please see the        *
+;* demonstration applications, located in the examples             *
+;* subdirectory of the "Freescale CodeWarrior for HC08" program    *
+;* directory.                                                      *
+;*******************************************************************
 
 ; Include derivative-specific definitions
             INCLUDE 'derivative.inc'
@@ -60,12 +68,12 @@ r1:
 init:
 			lda   #$52
 			sta   SOPT1 ; Desactivar watchdog y BKGD como PTA4
-			lda   #%00010111
-			sta	  IRQSC
-			lda   #%00000001
-			sta	  KBISC
-			lda   #%00000000
-			sta   KBIES
+			;lda   #%00010111
+			;sta	  IRQSC
+			;lda   #%00000001
+			;sta	  KBISC
+			;lda   #%00000000
+			;sta   KBIES
 			lda   #%00011111
 			sta   PTADD
 			lda   #%11110000
@@ -74,17 +82,17 @@ init:
 			sta   PTAPE
 			lda   #%00001111
 			sta   PTBPE
-			lda   #%11110000;
-			sta   KBIPE
-			lda   #%00000101
-			sta   KBISC
-			lda   #%00000011
-			sta   KBISC
-			lda	  #%11111101
-			and   KBISC
-			ora   #%00000010
-			sta	  KBISC
-			cli 
+			;lda   #%11110000;
+			;sta   KBIPE
+			;lda   #%00000101
+			;sta   KBISC
+			;lda   #%00000011
+			;sta   KBISC
+			;lda	  #%11111101
+			;and   KBISC
+			;ora   #%00000010
+			;sta	  KBISC
+			;cli 
 			
 			lda	  #$00
 			sta   estado
@@ -259,22 +267,22 @@ esc9: 		lda   PTBD 			;Escribir 8b1000xxxx
 verif:							;Función para verificar el estado de las entradas de los pulsadores
 			lda	  #%00000001	;Verificación de cambios en el pulsador1 PTB0 
 			and   PTBD
-			cmp	  #%00000001
+			cmp	  #%00000000
 			beq	  aug1			
 			bne	  verack1 
 v1:			lda	  #%00000010	;Verificación de cambios en el pulsador2 PTB1 
 			and   PTBD
-			cmp	  #%00000010
+			cmp	  #%00000000
 			beq	  aug2
 			bne	  verack2 	
 v2:			lda	  #%00000100	;Verificación de cambios en el pulsador3 PTB2 
 			and   PTBD
-			cmp	  #%00000100
+			cmp	  #%00000000
 			beq	  aug3
 			bne	  verack3 	
 v3:			lda	  #%00001000	;Verificación de cambios en el pulsador4 PTB3 
 			and   PTBD
-			cmp	  #%00001000
+			cmp	  #%00000000
 			beq	  aug4
 			bne	  verack4 			
 veriffin:	rts
@@ -301,18 +309,22 @@ aug4r:		jmp   veriffin
 verack1:    lda   acka			;subrutina de limpieza de acknoledge para el pulsador dado
 			cmp	  #$01
 			beq   vack1
+			bne	  v1
 verack1r:	jmp	  v1
 verack2:    lda   ackb			;subrutina de limpieza de acknoledge para el pulsador dado
 			cmp	  #$01	
 			beq   vack2
+			bne	  v2
 verack2r:	jmp	  v2
 verack3:    lda   ack3			;subrutina de limpieza de acknoledge para el pulsador dado
 			cmp	  #$01
 			beq   vack3
+			bne	  v3
 verack3r:	jmp	  v3
 verack4:    lda   ackd		;subrutina de limpieza de acknoledge para el pulsador dado
 			cmp	  #$01
 			beq   vack4
+			bne   veriffin
 verack4r:	jmp	  veriffin
 vack1:		lda   #$00
 			sta	  acka
@@ -394,6 +406,7 @@ a4hora:		lda	  minl			;subrutina de aumento del registro hora para el pin dado
 			lda   #$01
 			sta	  ackd
 			jmp   a4r
+
 
 
 incDia0: 	lda		#9T			;Carga 9 al acumulador			
