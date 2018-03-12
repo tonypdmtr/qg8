@@ -38,18 +38,18 @@ _Startup:
 
 mainLoop:   bra   init
 
-r1:	    lda #00000000
+r1:	    lda #%00000000
 	    sta	PTAD
 	    jsr	retardo
-	    lda #11111111
+	    lda #%11111111
 	    sta	PTAD
 	    jsr retardo
 	    bra	r1
 
 
-init:       lda #01010000
+init:       lda #%01010000
 	    sta	SOPT1
-	    lda	#11111111
+	    lda	#%11111111
 	    sta	PTADD
 	    bra	r1
             
