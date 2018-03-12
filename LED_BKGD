@@ -26,9 +26,7 @@
 
 ; variable/data section
 MY_ZEROPAGE: SECTION  SHORT         ; Insert here your data definition
-var_sb:       ds.b   1
-datos:		SECTION
-var_b:		ds.b	1			
+			
 
 ; code section
 MyCode:     SECTION
@@ -39,9 +37,19 @@ _Startup:
 			CLI			; enable interrupts
 
 mainLoop:   bra   init
+r1:	    lda #00000000
+	    sta	PTAD
+	    bra	retardo
+	    lda #11111111
+	    sta	PTAD
+	    
 
 
-init:       lda #$
+init:       lda #01000000
+	    sta	SOPT1
+	    lda	#11111111
+	    sta	PTADD
+	    bra	r1
             
             
 
