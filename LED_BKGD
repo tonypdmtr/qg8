@@ -1,0 +1,50 @@
+;*******************************************************************
+;* Universidad Nacional de Colombia                                *
+;* Facultad de ingeniería mecánica y mecatrónica                   *
+;* Microcontroladores 2018-I                                       *
+;* Programador:                                                    *
+;* -Javier Mauricio Pinilla Garcia  25481244                       *
+;* Version: 1.0                                                    *
+;* Microcontrolador: MC9S08QG8CPBE                                 *
+;* Codigo creado para la practica No 3 donde se muestran los       *
+;* diferentes modos de direccionamiento                            *
+;*******************************************************************
+
+; Include derivative-specific definitions
+            INCLUDE 'derivative.inc'
+            
+
+; export symbols
+            XDEF _Startup, main
+            ; we export both '_Startup' and 'main' as symbols. Either can
+            ; be referenced in the linker .prm file or from C/C++ later on
+            
+            
+            
+            XREF __SEG_END_SSTACK   ; symbol defined by the linker for the end of the stack
+
+
+; variable/data section
+MY_ZEROPAGE: SECTION  SHORT         ; Insert here your data definition
+var_sb:       ds.b   1
+datos:		SECTION
+var_b:		ds.b	1			
+
+; code section
+MyCode:     SECTION
+main:
+_Startup:
+            LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
+            TXS
+			CLI			; enable interrupts
+
+mainLoop:   bra   init
+
+
+init:       lda #$
+            
+            
+
+
+            feed_watchdog
+BRA mainLoop
