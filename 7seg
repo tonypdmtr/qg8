@@ -1,14 +1,10 @@
 ;*******************************************************************
-;* Universidad Nacional de Colombia                                *
-;* Facultad de ingeniería mecánica y mecatrónica                   *
-;* Microcontroladores 2018-I                                       *
-;* Programador:                                                    *
-;* -Sebastian Cepeda Espinosa	    25481375                         *
-;* -Javier Mauricio Pinilla Garcia  25481244                       *
-;* Version: 1.0                                                    *
-;* Microcontrolador: MC9S08QG8CPBE                                 *
-;* Riutina Fecha-Hora 7-Segmentos, laboratorio No 4                *
-;*                                                                 *
+;* This stationery serves as the framework for a user application. *
+;* For a more comprehensive program that demonstrates the more     *
+;* advanced functionality of this processor, please see the        *
+;* demonstration applications, located in the examples             *
+;* subdirectory of the "Freescale CodeWarrior for HC08" program    *
+;* directory.                                                      *
 ;*******************************************************************
 
 ; Include derivative-specific definitions
@@ -27,6 +23,7 @@
 
 ; variable/data section
 MY_ZEROPAGE: SECTION  SHORT         ; Insert here your data definition
+
 estado:       ds.b   1
 minh:		  ds.b   1
 minl:		  ds.b   1
@@ -36,35 +33,28 @@ diah:		  ds.b   1
 dial:		  ds.b   1
 mesh:		  ds.b   1
 mesl:		  ds.b   1
+
+Acnoledge: 	 SECTION
+acka:		  ds.b   1
+ackb:		  ds.b   1
+ack3:		  ds.b   1
+ackd:		  ds.b   1
+
 ; code section
 MyCode:     SECTION
 main:
 _Startup:
             LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
             TXS
-			CLI			; enable interrupts
-
-initIRQ:	pshh
-			lda #$01
-			eor	estado
-			sta	estado
-			jsr finIRQ
-			
-finIRQ:		bset 2,IRQSC
-			pulh
-			rti	
-			
-			
-			
 
 mainLoop:
             ; Insert your code here
-			bra init
+			jmp init
 r1:			
 			jsr	  escritura
-			jsr	  retardo
-		
-			bra	  r1
+			jsr	  verif
+			
+			jmp	  r1
             
             
 init:
@@ -114,7 +104,15 @@ init:
 			sta   mesh
 			lda	  #$03
 			sta   mesl
-			bra	  r1
+			lda	  #$00
+			sta   acka
+			lda	  #$00
+			sta   ackb
+			lda	  #$00
+			sta   ack3
+			lda	  #$00
+			sta   ackd
+			jmp	  r1
 			
 retardo: 	
 			lda		#$01
@@ -130,7 +128,6 @@ escritura:  lda   #$01
 			cmp   estado
 			beq	  wfecha
 			bne	  whora
-			
 escfin:		rts
 	  
 wfecha:		lda	  #%00000001
@@ -153,7 +150,7 @@ wfecha:		lda	  #%00000001
 			lda	  dial
 			jsr   escnum
 			jsr   retardo
-			bra   escfin
+			jmp   escfin
 			
 whora:		lda	  #%00000001
 			sta	  PTAD
@@ -175,7 +172,7 @@ whora:		lda	  #%00000001
 			lda	  minl
 			jsr   escnum
 			jsr   retardo
-			bra   escfin	
+			jmp   escfin	
 
 escnum:		cmp	  #$00
 			beq   esc0
@@ -203,61 +200,201 @@ nf:			rts
 esc0:       lda   PTBD 			;Escribir 8b0000xxxx
 			and   #%00001111
 			sta	  PTBD	
-			bra n1
+			jmp   n1
 				
 esc1: 		lda   PTBD 			;Escribir 8b0001xxxx
 			and   #%00001111
 			ora   #%00010000
 			sta	  PTBD	
-			bra n2
+			jmp   n2
 			
 esc2:		lda   PTBD 			;Escribir 8b0010xxxx
 			and   #%00001111
 			ora   #%00100000
 			sta	  PTBD	
-			bra n3
+			jmp   n3
  
 esc3:		lda   PTBD 			;Escribir 8b0011xxxx
 			and   #%00001111
 			ora   #%00110000
 			sta	  PTBD	
-			bra n4
+			jmp   n4
 			
 esc4:		lda   PTBD 			;Escribir 8b0100xxxx
 			and   #%00001111
 			ora   #%01000000
 			sta	  PTBD	
-			bra n5
+			jmp   n5
  
 esc5:		lda   PTBD 			;Escribir 8b0101xxxx
 			and   #%00001111
 			ora   #%01010000
 			sta	  PTBD	
-			bra n6
+			jmp   n6
  
 esc6:		lda   PTBD 			;Escribir 8b0110xxxx
 			and   #%00001111
 			ora   #%01100000
 			sta	  PTBD	
-			bra n7
+			jmp   n7
  
 esc7:		lda   PTBD 			;Escribir 8b0111xxxx
 			and   #%00001111
 			ora   #%01110000
 			sta	  PTBD	
-			bra n8
+			jmp   n8
  
 esc8: 		lda   PTBD 			;Escribir 8b1000xxxx
 			and   #%00001111
 			ora   #%10000000
 			sta	  PTBD	
-			bra n9
+			jmp   n9
 	
 esc9: 		lda   PTBD 			;Escribir 8b1000xxxx
 			and   #%00001111
 			ora   #%10010000
 			sta	  PTBD	
-			bra nf
+			jmp   nf
+
+verif:							;Función para verificar el estado de las entradas de los pulsadores
+			lda	  #%00000001	;Verificación de cambios en el pulsador1 PTB0 
+			and   PTBD
+			cmp	  #%00000001
+			beq	  aug1			
+			bne	  verack1 
+v1:			lda	  #%00000010	;Verificación de cambios en el pulsador2 PTB1 
+			and   PTBD
+			cmp	  #%00000010
+			beq	  aug2
+			bne	  verack2 	
+v2:			lda	  #%00000100	;Verificación de cambios en el pulsador3 PTB2 
+			and   PTBD
+			cmp	  #%00000100
+			beq	  aug3
+			bne	  verack3 	
+v3:			lda	  #%00001000	;Verificación de cambios en el pulsador4 PTB3 
+			and   PTBD
+			cmp	  #%00001000
+			beq	  aug4
+			bne	  verack4 			
+veriffin:	rts
+								; Para el pulsador 1
+aug1:		lda   acka			;Verificación para evitar repetición de aumento del registro
+			cmp	  #$00
+			beq   a1	
+aug1r:		jmp   v1
+								; Para el pulsador 2:
+aug2:		lda   #$00			;Verificación para evitar repetición de aumento del registro
+			cmp	  ackb
+			beq   a2	
+aug2r:		jmp   v2
+								; Para el pulsador 3:
+aug3:		lda   ack3			;Verificación para evitar repetición de aumento del registro
+			cmp	  #$00	
+			beq   a3	
+aug3r:		jmp   v3
+								; Para el pulsador 4:
+aug4:		lda   ackd			;Verificación para evitar repetición de aumento del registro
+			cmp	  #$00
+			beq   a4	
+aug4r:		jmp   veriffin
+verack1:    lda   acka			;subrutina de limpieza de acknoledge para el pulsador dado
+			cmp	  #$01
+			beq   vack1
+verack1r:	jmp	  v1
+verack2:    lda   ackb			;subrutina de limpieza de acknoledge para el pulsador dado
+			cmp	  #$01	
+			beq   vack2
+verack2r:	jmp	  v2
+verack3:    lda   ack3			;subrutina de limpieza de acknoledge para el pulsador dado
+			cmp	  #$01
+			beq   vack3
+verack3r:	jmp	  v3
+verack4:    lda   ackd		;subrutina de limpieza de acknoledge para el pulsador dado
+			cmp	  #$01
+			beq   vack4
+verack4r:	jmp	  veriffin
+vack1:		lda   #$00
+			sta	  acka
+			jmp	  verack1r
+vack2:		lda   #$00
+			sta	  ackb
+			jmp	  verack2r
+vack3:		lda   #$00
+			sta	  ack3
+			jmp	  verack3r
+vack4:		lda   #$00
+			sta	  ackd
+			jmp	  verack4r
+a1:         lda   estado		;subrutina de selección de registro para aumento según estado
+			cmp	  #$01
+			beq	  a1fecha
+			bne	  a1hora	  
+a1r:		jmp	  aug1r
+a2:         lda   estado		;subrutina de selección de registro para aumento según estado
+			cmp	  #$01
+			beq	  a2fecha
+			bne	  a2hora	  
+a2r:		jmp	  aug2r
+a3:         lda   estado		;subrutina de selección de registro para aumento según estado
+			cmp	  #$01
+			beq	  a3fecha
+			bne	  a3hora	  
+a3r:		jmp	  aug3r
+a4:         lda   estado		;subrutina de selección de registro para aumento según estado
+			cmp	  #$01
+			beq	  a4fecha
+			bne	  a4hora	  
+a4r:		jmp	  aug4r
+a1fecha:	lda	  mesh			;subrutina de aumento del registro fecha para el pin dado
+			add	  #$01
+			sta	  mesh	
+			lda   #$01
+			sta	  acka
+			jmp   a1r
+a1hora:		lda	  horah			;subrutina de aumento del registro hora para el pin dado
+			add	  #$01
+			sta	  horah	
+			lda   #$01
+			sta	  acka
+			jmp   a1r
+a2fecha:	lda	  mesl			;subrutina de aumento del registro fecha para el pin dado
+			add	  #$01
+			sta	  mesl	
+			lda   #$01
+			sta	  ackb
+			jmp   a2r
+a2hora:		lda	  horal			;subrutina de aumento del registro hora para el pin dado
+			add	  #$01
+			sta	  horal	
+			lda   #$01
+			sta	  ackb
+			jmp   a2r
+a3fecha:	lda	  diah			;subrutina de aumento del registro fecha para el pin dado
+			add	  #$01
+			sta	  diah	
+			lda   #$01
+			sta	  ack3
+			jmp   a3r
+a3hora:		lda	  minh			;subrutina de aumento del registro hora para el pin dado
+			add	  #$01
+			sta	  minh	
+			lda   #$01
+			sta	  ack3
+			jmp   a3r
+a4fecha:	lda	  dial			;subrutina de aumento del registro fecha para el pin dado
+			add	  #$01
+			sta	  dial	
+			lda   #$01
+			sta	  ackd
+			jmp   a4r
+a4hora:		lda	  minl			;subrutina de aumento del registro hora para el pin dado
+			add	  #$01
+			sta	  minl	
+			lda   #$01
+			sta	  ackd
+			jmp   a4r
+
 
 incDia0: 	lda		#9T			;Carga 9 al acumulador			
 			cmp		dial		;compara con dia low
