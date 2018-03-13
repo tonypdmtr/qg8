@@ -50,10 +50,23 @@ ackd:		  ds.b   1
 
 ; code section
 MyCode:     SECTION
+
+
+
+
 main:
 _Startup:
             LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
             TXS
+
+intirq:	
+			pshh
+			bset IRQSC_IRQACK,IRQSC
+			lda #$01
+			eor	estado
+			sta	estado
+			pulh
+			rti			
 
 mainLoop:
             ; Insert your code here
@@ -61,6 +74,7 @@ mainLoop:
 r1:			
 			jsr	  escritura
 			jsr	  verif
+			;jsr	  verif_digito
 			
 			jmp	  r1
             
@@ -406,6 +420,69 @@ a4hora:		lda	  minl			;subrutina de aumento del registro hora para el pin dado
 			lda   #$01
 			sta	  ackd
 			jmp   a4r
+			
+verif_digito:
+			lda #10T			;carga 10 al acumulador
+			cmp minl			;compara con minl
+			bne	sr1				;si es diferente va a sr1
+			lda #%0				;si minl==10
+			sta	minl			;minl=0
+			lda	minh			;carga minh al acumulador
+			add	#%1				;suma 1 al acumulador
+			sta minh			;carga a minh el acumulador
+			
+			lda #10T			;carga 10 al acumulador
+			cmp dial			;compara con dial
+			bne	sr1				;si es diferente va a sr1
+			lda #%0				;si dial==10
+			sta	dial			;dial=0
+			lda	diah			;carga diah al acumulador
+			add	#%1				;suma 1 al acumulador
+			sta diah			;carga a diah el acumulador
+			
+			lda #10T			;carga 10 al acumulador
+			cmp horal			;compara con horal
+			bne	sr1				;si es diferente va a sr1
+			lda #%0				;si horal==10
+			sta	horal			;horal=0
+			lda	horah			;carga horah al acumulador
+			add	#%1				;suma 1 al acumulador
+			sta horah			;carga a horah el acumulador
+			
+			lda #10T			;carga 10 al acumulador
+			cmp mesl			;compara con mesl
+			bne	sr1				;si es diferente va a sr1
+			lda #%0				;si mesl==10
+			sta	mesl			;mesl=0
+			lda	mesh			;carga mesh al acumulador
+			add	#%1				;suma 1 al acumulador
+			sta mesh			;carga a mesh el acumulador
+			
+			lda #3T			    ;carga 3 al acumulador
+			cmp diah			;compara con diah
+			bne	sr1				;si es diferente va a sr1
+			lda #%0				;si diah==3
+			sta	diah			;diah=0
+			lda	mesl			;carga mesl al acumulador
+			add	#%1				;suma 1 al acumulador
+			sta mesl			;carga a mesl el acumulador
+			
+			lda #6T			    ;carga 10 al acumulador
+			cmp minh			;compara con minh
+			bne	sr1				;si es diferente va a sr1
+			lda #%0				;si minh==6
+			sta	minh			;minh=0
+			lda	horal			;carga horal al acumulador
+			add	#%1				;suma 1 al acumulador
+			sta horal			;carga a horal el acumulador
+			jmp r1
+			
+sr1:		jmp r1
+			
+			
+			
+			
+
 
 
 
