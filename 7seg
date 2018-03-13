@@ -20,7 +20,7 @@
             
 
 ; export symbols
-            XDEF _Startup, main
+            XDEF _Startup, main, intirq
             ; we export both '_Startup' and 'main' as symbols. Either can
             ; be referenced in the linker .prm file or from C/C++ later on
             
@@ -51,14 +51,6 @@ ackd:		  ds.b   1
 ; code section
 MyCode:     SECTION
 
-
-
-
-main:
-_Startup:
-            LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
-            TXS
-
 intirq:	
 			pshh
 			bset IRQSC_IRQACK,IRQSC
@@ -66,7 +58,15 @@ intirq:
 			eor	estado
 			sta	estado
 			pulh
-			rti			
+			rti	
+
+
+main:
+_Startup:
+            LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
+            TXS
+
+		
 
 mainLoop:
             ; Insert your code here
@@ -134,7 +134,7 @@ init:
 			sta   ack3
 			lda	  #$00
 			sta   ackd
-			jmp	  r1
+			jmp	  r1			
 			
 retardo: 	
 			lda		#$01
@@ -478,6 +478,11 @@ verif_digito:
 			jmp r1
 			
 sr1:		jmp r1
+			
+			
+			
+			
+
 			
 			
 			
