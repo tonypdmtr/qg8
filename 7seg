@@ -42,18 +42,28 @@ dial:		  ds.b   1
 mesh:		  ds.b   1
 mesl:		  ds.b   1
 
+
 Acnoledge: 	 SECTION
 acka:		  ds.b   1
 ackb:		  ds.b   1
 ackc:		  ds.b   1
 ackd:		  ds.b   1
 
-; code section
-MyCode:     SECTION
+Aux:		 SECTION
+seg:	  ds.b	 1
+seg_aux:		  ds.b	 1
+Javier:   SECTION
+; ================= RUtina  de Interrupcion por IRQ
 
 intirq:	
 		pshh
-		bset  IRQSC_IRQACK,IRQSC   ; Reconocimiento de int y forza la bandera a 0.
+        bset  IRQSC_IRQACK,IRQSC   ; Reconocimiento de int y forza la bandera a 0.
+        bclr	  IRQSC_IRQIE,IRQSC
+        jsr retardo
+        jsr retardo
+        jsr retardo
+        jsr retardo
+irq_1:	brclr 5,PTAD,irq_1        
 		lda #$01
 		cmp	estado
 		beq st1
@@ -67,18 +77,22 @@ st2:	lda #$01
 		sta	estado
 		bra finirq
 		
-finirq: 
+finirq: bset IRQSC_IRQIE,IRQSC
 		pulh
 		rti	
-
-
+; =============== Main Program ==========================
+ProgMain:  SECTION
 main:
 _Startup:
             LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
             TXS
-			jmp init
-			jsr conf_IRQ
-			CLI
+			bsr init
+			; ========= Rutina configuracion de IRQ
+             jsr   conf_IRQ  
+
+; ========= Habilita procesar interrupciones
+             CLI			; enable interrupts              
+              
 		
 
 mainLoop:
@@ -88,6 +102,7 @@ r1:
 			jsr	  escritura
 			jsr	  verif
 			jsr   verif_digito
+			;jsr	  segundo
 			
 			jmp	  r1
             
@@ -95,8 +110,6 @@ r1:
 init:
 			lda   #$52
 			sta   SOPT1 ; Desactivar watchdog y BKGD como PTA4
-			lda   #%00010111
-			sta	  IRQSC
 			lda   #%00011111
 			sta   PTADD
 			lda   #%11110000
@@ -105,9 +118,12 @@ init:
 			sta   PTAPE
 			lda   #%00001111
 			sta   PTBPE
-						
+			lda	  #$00
+			sta	  seg
+			sta	  seg_aux			
 			lda	  #$01
 			sta   estado
+			
 			lda	  #$00
 			sta   minh
 			lda	  #$00
@@ -132,13 +148,14 @@ init:
 			sta   ackc
 			lda	  #$00
 			sta   ackd
-			jmp	  r1			
+			rts		
 			
 retardo: 	
 			lda		#$01
 rt1:		psha
 			lda		#$ff
-rt2:		dbnza	rt2
+rt2:		
+			dbnza	rt2
 			pula
 			dbnza	rt1
 			rts
@@ -154,44 +171,60 @@ wfecha:		lda	  #%00000001
 			sta	  PTAD
 			lda	  mesh
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			lda	  #%00000010
 			sta	  PTAD
 			lda	  mesl
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			lda	  #%00000100
 			sta	  PTAD
 			lda	  diah
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			lda	  #%00001000
 			sta	  PTAD
 			lda	  dial
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			jmp   escfin
 			
 whora:		lda	  #%00000001
 			sta	  PTAD
 			lda	  horah
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			lda	  #%00000010
 			sta	  PTAD
 			lda	  horal
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			lda	  #%00000100
 			sta	  PTAD
 			lda	  minh
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			lda	  #%00001000
 			sta	  PTAD
 			lda	  minl
 			jsr   escnum
+			NOP
 			jsr   retardo
+			NOP
 			jmp   escfin	
 
 escnum:		cmp	  #$00
@@ -419,6 +452,8 @@ a4hora:		lda	  minl			;subrutina de aumento del registro hora para el pin dado
 			sta	  ackd
 			jmp   a4r
 			
+
+			
 verif_digito:
 			lda   #$0A			;carga 10 al acumulador
 			cmp   minl			;compara con minl
@@ -476,15 +511,20 @@ vd5:		lda #$06			    ;carga 10 al acumulador
 			jmp r1
 			
 sr1:		rts
+
+
 			
 			
+			
+			
+
 ****************************************************************
 ;Subrutina de configuraciÛn del Modulo IRQ
 conf_IRQ:     ; Label de la Interrupción
               ; 76543210 Bits
         lda   #%01010011
               ; ||||||||
-              ; |||||||+--------- IRQMODE  = Flanco de Bajada y nivel
+              ; |||||||+--------- IRQMODE  = Flanco de Bajada
               ; ||||||+---------- IRQIE = IRQ habilitada
               ; |||||+----------- IRQACK = Para reconocimiento
               ; ||||+------------ IRQF  = Solo lectura
