@@ -45,36 +45,49 @@ mesl:		  ds.b   1
 Acnoledge: 	 SECTION
 acka:		  ds.b   1
 ackb:		  ds.b   1
-ack3:		  ds.b   1
+ackc:		  ds.b   1
 ackd:		  ds.b   1
 
 ; code section
 MyCode:     SECTION
 
 intirq:	
-			pshh
-			bset IRQSC_IRQACK,IRQSC
-			lda #$01
-			eor	estado
-			sta	estado
-			pulh
-			rti	
+		pshh
+		bset  IRQSC_IRQACK,IRQSC   ; Reconocimiento de int y forza la bandera a 0.
+		lda #$01
+		cmp	estado
+		beq st1
+		bne	st2
+		
+st1:	lda #$00
+		sta	estado
+		bra finirq
+		
+st2:	lda #$01
+		sta	estado
+		bra finirq
+		
+finirq: 
+		pulh
+		rti	
 
 
 main:
 _Startup:
             LDHX   #__SEG_END_SSTACK ; initialize the stack pointer
             TXS
-
+			jmp init
+			jsr conf_IRQ
+			CLI
 		
 
 mainLoop:
             ; Insert your code here
-			jmp init
+			
 r1:			
 			jsr	  escritura
 			jsr	  verif
-			;jsr	  verif_digito
+			jsr   verif_digito
 			
 			jmp	  r1
             
@@ -82,12 +95,8 @@ r1:
 init:
 			lda   #$52
 			sta   SOPT1 ; Desactivar watchdog y BKGD como PTA4
-			;lda   #%00010111
-			;sta	  IRQSC
-			;lda   #%00000001
-			;sta	  KBISC
-			;lda   #%00000000
-			;sta   KBIES
+			lda   #%00010111
+			sta	  IRQSC
 			lda   #%00011111
 			sta   PTADD
 			lda   #%11110000
@@ -96,19 +105,8 @@ init:
 			sta   PTAPE
 			lda   #%00001111
 			sta   PTBPE
-			;lda   #%11110000;
-			;sta   KBIPE
-			;lda   #%00000101
-			;sta   KBISC
-			;lda   #%00000011
-			;sta   KBISC
-			;lda	  #%11111101
-			;and   KBISC
-			;ora   #%00000010
-			;sta	  KBISC
-			;cli 
-			
-			lda	  #$00
+						
+			lda	  #$01
 			sta   estado
 			lda	  #$00
 			sta   minh
@@ -131,7 +129,7 @@ init:
 			lda	  #$00
 			sta   ackb
 			lda	  #$00
-			sta   ack3
+			sta   ackc
 			lda	  #$00
 			sta   ackd
 			jmp	  r1			
@@ -293,7 +291,7 @@ v2:			lda	  #%00000100	;Verificación de cambios en el pulsador3 PTB2
 			and   PTBD
 			cmp	  #%00000000
 			beq	  aug3
-			bne	  verack3 	
+			bne	  verackc 	
 v3:			lda	  #%00001000	;Verificación de cambios en el pulsador4 PTB3 
 			and   PTBD
 			cmp	  #%00000000
@@ -311,7 +309,7 @@ aug2:		lda   #$00			;Verificación para evitar repetición de aumento del regist
 			beq   a2	
 aug2r:		jmp   v2
 								; Para el pulsador 3:
-aug3:		lda   ack3			;Verificación para evitar repetición de aumento del registro
+aug3:		lda   ackc			;Verificación para evitar repetición de aumento del registro
 			cmp	  #$00	
 			beq   a3	
 aug3r:		jmp   v3
@@ -330,11 +328,11 @@ verack2:    lda   ackb			;subrutina de limpieza de acknoledge para el pulsador d
 			beq   vack2
 			bne	  v2
 verack2r:	jmp	  v2
-verack3:    lda   ack3			;subrutina de limpieza de acknoledge para el pulsador dado
+verackc:    lda   ackc			;subrutina de limpieza de acknoledge para el pulsador dado
 			cmp	  #$01
-			beq   vack3
+			beq   vackc
 			bne	  v3
-verack3r:	jmp	  v3
+verackcr:	jmp	  v3
 verack4:    lda   ackd		;subrutina de limpieza de acknoledge para el pulsador dado
 			cmp	  #$01
 			beq   vack4
@@ -346,9 +344,9 @@ vack1:		lda   #$00
 vack2:		lda   #$00
 			sta	  ackb
 			jmp	  verack2r
-vack3:		lda   #$00
-			sta	  ack3
-			jmp	  verack3r
+vackc:		lda   #$00
+			sta	  ackc
+			jmp	  verackcr
 vack4:		lda   #$00
 			sta	  ackd
 			jmp	  verack4r
@@ -400,13 +398,13 @@ a3fecha:	lda	  diah			;subrutina de aumento del registro fecha para el pin dado
 			add	  #$01
 			sta	  diah	
 			lda   #$01
-			sta	  ack3
+			sta	  ackc
 			jmp   a3r
 a3hora:		lda	  minh			;subrutina de aumento del registro hora para el pin dado
 			add	  #$01
 			sta	  minh	
 			lda   #$01
-			sta	  ack3
+			sta	  ackc
 			jmp   a3r
 a4fecha:	lda	  dial			;subrutina de aumento del registro fecha para el pin dado
 			add	  #$01
@@ -422,65 +420,81 @@ a4hora:		lda	  minl			;subrutina de aumento del registro hora para el pin dado
 			jmp   a4r
 			
 verif_digito:
-			lda #10T			;carga 10 al acumulador
-			cmp minl			;compara con minl
-			bne	sr1				;si es diferente va a sr1
-			lda #%0				;si minl==10
-			sta	minl			;minl=0
-			lda	minh			;carga minh al acumulador
-			add	#%1				;suma 1 al acumulador
-			sta minh			;carga a minh el acumulador
+			lda   #$0A			;carga 10 al acumulador
+			cmp   minl			;compara con minl
+			bne	  vd1				;si es diferente va a sr1
+			lda   #$00				;si minl==10
+			sta	  minl			;minl=0
+			lda	  minh			;carga minh al acumulador
+			add	  #$01				;suma 1 al acumulador
+			sta   minh			;carga a minh el acumulador
 			
-			lda #10T			;carga 10 al acumulador
-			cmp dial			;compara con dial
-			bne	sr1				;si es diferente va a sr1
-			lda #%0				;si dial==10
-			sta	dial			;dial=0
-			lda	diah			;carga diah al acumulador
-			add	#%1				;suma 1 al acumulador
-			sta diah			;carga a diah el acumulador
+vd1:		lda   #$0A			;carga 10 al acumulador
+			cmp   dial			;compara con dial
+			bne   vd2				;si es diferente va a sr1
+			lda   #$00				;si dial==10
+			sta	  dial			;dial=0
+			lda	  diah			;carga diah al acumulador
+			add   #$01				;suma 1 al acumulador
+			sta   diah			;carga a diah el acumulador
 			
-			lda #10T			;carga 10 al acumulador
+vd2:		lda #$0A			;carga 10 al acumulador
 			cmp horal			;compara con horal
-			bne	sr1				;si es diferente va a sr1
-			lda #%0				;si horal==10
+			bne	vd3				;si es diferente va a sr1
+			lda #$00				;si horal==10
 			sta	horal			;horal=0
 			lda	horah			;carga horah al acumulador
-			add	#%1				;suma 1 al acumulador
+			add	#$01			;suma 1 al acumulador
 			sta horah			;carga a horah el acumulador
 			
-			lda #10T			;carga 10 al acumulador
+vd3:		lda #$0A			;carga 10 al acumulador
 			cmp mesl			;compara con mesl
-			bne	sr1				;si es diferente va a sr1
-			lda #%0				;si mesl==10
+			bne	vd4				;si es diferente va a sr1
+			lda #$00				;si mesl==10
 			sta	mesl			;mesl=0
 			lda	mesh			;carga mesh al acumulador
-			add	#%1				;suma 1 al acumulador
+			add	#$01				;suma 1 al acumulador
 			sta mesh			;carga a mesh el acumulador
 			
-			lda #3T			    ;carga 3 al acumulador
+vd4:		lda #$03			    ;carga 3 al acumulador
 			cmp diah			;compara con diah
-			bne	sr1				;si es diferente va a sr1
-			lda #%0				;si diah==3
+			bne	vd5				;si es diferente va a sr1
+			lda #$00				;si diah==3
 			sta	diah			;diah=0
 			lda	mesl			;carga mesl al acumulador
-			add	#%1				;suma 1 al acumulador
+			add	#$01				;suma 1 al acumulador
 			sta mesl			;carga a mesl el acumulador
 			
-			lda #6T			    ;carga 10 al acumulador
+vd5:		lda #$06			    ;carga 10 al acumulador
 			cmp minh			;compara con minh
 			bne	sr1				;si es diferente va a sr1
-			lda #%0				;si minh==6
+			lda #$00				;si minh==6
 			sta	minh			;minh=0
 			lda	horal			;carga horal al acumulador
-			add	#%1				;suma 1 al acumulador
+			add	#$01				;suma 1 al acumulador
 			sta horal			;carga a horal el acumulador
 			jmp r1
 			
-sr1:		jmp r1
+sr1:		rts
 			
 			
-			
+****************************************************************
+;Subrutina de configuraciÛn del Modulo IRQ
+conf_IRQ:     ; Label de la Interrupción
+              ; 76543210 Bits
+        lda   #%01010011
+              ; ||||||||
+              ; |||||||+--------- IRQMODE  = Flanco de Bajada y nivel
+              ; ||||||+---------- IRQIE = IRQ habilitada
+              ; |||||+----------- IRQACK = Para reconocimiento
+              ; ||||+------------ IRQF  = Solo lectura
+              ; |||+------------- IRQPE = Pin Habilitado disponible .
+              ; ||+-------------- No Disponible
+              ; |+--------------- IRQPDD =
+              ; +---------------- NO disponible
+         sta   IRQSC  ; Configura la Interrupción     
+         rts     ;Retorno de subrutina de IRQ
+;****************************************************************
 			
 
 			
@@ -489,113 +503,3 @@ sr1:		jmp r1
 			
 
 
-
-
-incDia0: 	lda		#9T			;Carga 9 al acumulador			
-			cmp		dial		;compara con dia low
-			beq		incDia1		;si dia low es 9 va a incDia1
-			lda		dial		;carga dial al acumulador
-			add		#$1			;suma 1 al acumulador
-			sta		dial		;lo asigna a dial
-			jsr		mainLoop	;vuelve al main
-			
-incDia1:	lda		$#0			;carga 0 al acumulador
-			sta		dial		;lo asigna a dial 
-			lda		#3T			;carga 3 al acumulador
-			cmp		diah		;compara con diah	
-			beq		incDia2		;si es igual va a incDia2
-			lda		diah		;carga diah al acumulador
-			add		#$1			;suma 1 al acumulador
-			sta		diah		;lo asigna a diah
-			jsr 	mainLoop	;vuelve al main
-				
-incDia2:	lda		#$0			;carga 0 al acumulador
-			sta		diah		;lo asigna a diah
-			jsr		incMes0		;salta a incMes0
-			
-incMes0:	lda		#9T			;carga 9 al acumulador
-			cmp		mesl		;compara con mesl
-			beq		incMes1		;si es igual salta a incMes1
-			lda		mesl		;carga mesl al acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		mesl		;carga el valor a mesl
-			jsr		mainLoop	;vuelve al mainLoop
-			
-incMes1:	lda		$#0			;carga 0 en el acumulador
-			sta		mesl		;lo asigna a mesl
-			lda		#1T		;carga 1 en el acumulador
-			beq		incMes2		;si es igual salta a incMes2
-			lda		mesh		;carga mesh al acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		mesh		;lo asigna a mesh
-			jsr 	mainLoop		;vuelve al mainLoop
-			
-incMes2:	lda		#2T			;carga 2 al acumulador
-			cmp		mesl		;compara con mesl
-			blo		incMes3:	;si es menor salta a incMes3
-			lda		#$0		;carga 0 al acumulador
-			sta		mesl		;lo asigna a mesl
-			sta		meh		;lo asigna a mesh
-			jsr		mainLoop	;vuelve al mainLoop
-			
-incMes3:	lda		mesl			;carga mesl en el acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		mesl		;lo carga en mesl
-			jsr		mainLoop	;vuelve al mainLoop
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;			
-			
-incMin0: 	lda		#9T			;Carga 9 al acumulador			
-			cmp		minl		;compara con minl
-			beq		incMin1		;si minl es 9 va a incMin1
-			lda		minl		;carga minl al acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		minl		;lo asigna a minl
-			jsr		mainLoop	;vuelve al main
-			
-incMin1:	lda		$#0			;carga 0 al acumulador
-			sta		minl		;lo asigna a minl 
-			lda		#6T		;carga 6 al acumulador
-			cmp		minh		;compara con minh	
-			beq		incMin2		;si es igual va a incMin2
-			lda		minh		;carga minh al acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		minh		;lo asigna a minh
-			jsr 	mainLoop	;vuelve al main
-				
-incMin2:	lda		#$0			;carga 0 al acumulador
-			sta		minh		;lo asigna a minh
-			jsr		incHora0	;salta a incHora0
-			
-incHora0:	lda		#9T			;carga 9 al acumulador
-			cmp		horal		;compara con horal
-			beq		incHora1	;si es igual salta a incHora1
-			lda		horal		;carga horal al acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		horal		;carga el valor a horal
-			jsr		mainLoop	;vuelve al mainLoop
-			
-incHora1:	lda		$#0			;carga 0 en el acumulador
-			sta		horal		;lo asigna a horal
-			lda		#2T		;carga 2 en el acumulador
-			beq		incHora2	;si es igual salta a incHora2
-			lda		horah		;carga horah al acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		horah		;lo asigna a horah
-			jsr 	mainLoop		;vuelve al mainLoop
-			
-incHora2:	lda		#4T			;carga 4 al acumulador
-			cmp		horal		;compara con horal
-			blo		incHora3:	;si es menor salta a incHora3
-			lda		#$0		;carga 0 al acumulador
-			sta		horal		;lo asigna a horal
-			sta		horah		;lo asigna a horah
-			jsr		mainLoop	;vuelve al mainLoop
-			
-incHora3:	lda		mesl			;carga mesl en el acumulador
-			add		#$1		;suma 1 al acumulador
-			sta		horal		;lo carga en horal
-			jsr		mainLoop	;vuelve al mainLoop
-			
-			
-			
-			
