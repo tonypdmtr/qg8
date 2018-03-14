@@ -514,7 +514,35 @@ sr1:		rts
 
 
 			
+segundo:	lda #%11010100
+			cmp seg
+			beq aum_seg_aux
+			lda seg
+			add #$01
+			sta seg
+			jmp r1
+aum_seg_aux:
+			lda #$00  
+			sta seg
+			lda #$04
+			cmp seg_aux
+			beq cambio_seg
+			lda seg_aux
+			add #$01
+			sta seg_aux
+			jmp r1
 			
+cambio_seg: lda #$00
+			sta	seg_aux
+			brclr 4,PTAD,stx2
+			brset 4,PTAD,stx1
+		
+stx1:		bclr 4,PTAD	
+			jmp r1
+		
+stx2:		bset 4,PTAD
+			jmp r1
+				
 			
 			
 
