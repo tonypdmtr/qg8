@@ -563,6 +563,38 @@ conf_IRQ:     ; Label de la Interrupción
 			
 			
 			
+						
+vd5:		lda #$06			    ;carga 10 al acumulador
+			cmp minh			;compara con minh
+			bne	sr1				;si es diferente va a sr1
+			lda #$00				;si minh==6
+			sta	minh			;minh=0
+			lda	horal			;carga horal al acumulador
+			add	#$01				;suma 1 al acumulador
+			sta horal			;carga a horal el acumulador
+			jmp vd6
+			
+vd6:		lda #$02			    ;carga 10 al acumulador
+			cmp horah			;compara con minh
+			bne	sr1				;si es diferente va a sr1
+			lda #$04				;si minh==6
+			cmp	horal			;minh=0
+			bne	sr1			;carga horal al acumulador
+			lda #$00				;suma 1 al acumulador
+			sta horah
+			sta horal			;carga a horal el acumulador
+			jmp vd7			
+			
+vd7:		lda #$01			    ;carga 10 al acumulador
+			cmp mesh			;compara con minh
+			bne	sr1				;si es diferente va a sr1
+			lda #$02				;si minh==6
+			cmp	mesl			;minh=0
+			bne	sr1			;carga horal al acumulador
+			lda #$00				;suma 1 al acumulador
+			sta mesh
+			sta mesl			;carga a horal el acumulador
+			jmp r1	
 			
 
 
