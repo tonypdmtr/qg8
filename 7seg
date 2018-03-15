@@ -453,26 +453,26 @@ a4hora:		lda	  minl			;subrutina de aumento del registro hora para el pin dado
 verif_digito:
 			lda   #$0A			;carga 10 al acumulador
 			cmp   minl			;compara con minl
-			bne	  vd1				;si es diferente va a sr1
-			lda   #$00				;si minl==10
+			bne	  vd1			;si es diferente va a vd1
+			lda   #$00			;si minl==10
 			sta	  minl			;minl=0
 			lda	  minh			;carga minh al acumulador
-			add	  #$01				;suma 1 al acumulador
+			add	  #$01			;suma 1 al acumulador
 			sta   minh			;carga a minh el acumulador
 			
 vd1:		lda   #$0A			;carga 10 al acumulador
 			cmp   dial			;compara con dial
-			bne   vd2				;si es diferente va a sr1
-			lda   #$00				;si dial==10
+			bne   vd2			;si es diferente va a vd2
+			lda   #$00			;si dial==10
 			sta	  dial			;dial=0
 			lda	  diah			;carga diah al acumulador
-			add   #$01				;suma 1 al acumulador
+			add   #$01			;suma 1 al acumulador
 			sta   diah			;carga a diah el acumulador
 			
 vd2:		lda #$0A			;carga 10 al acumulador
 			cmp horal			;compara con horal
-			bne	vd3				;si es diferente va a sr1
-			lda #$00				;si horal==10
+			bne	vd3				;si es diferente va a vd3
+			lda #$00			;si horal==10
 			sta	horal			;horal=0
 			lda	horah			;carga horah al acumulador
 			add	#$01			;suma 1 al acumulador
@@ -480,99 +480,116 @@ vd2:		lda #$0A			;carga 10 al acumulador
 			
 vd3:		lda #$0A			;carga 10 al acumulador
 			cmp mesl			;compara con mesl
-			bne	vd4				;si es diferente va a sr1
-			lda #$00				;si mesl==10
+			bne	vd4				;si es diferente va a vd4
+			lda #$00			;si mesl==10
 			sta	mesl			;mesl=0
 			lda	mesh			;carga mesh al acumulador
-			add	#$01				;suma 1 al acumulador
+			add	#$01			;suma 1 al acumulador
 			sta mesh			;carga a mesh el acumulador
 			
-vd4:		lda #$03			    ;carga 3 al acumulador
+vd4:		lda #$03			;carga 3 al acumulador
 			cmp diah			;compara con diah
-			bne	vd5				;si es diferente va a sr1
-			lda #$00				;si diah==3
+			bne	vd5				;si es diferente va a vd5
+			lda #$00			;si diah==3
 			sta	diah			;diah=0
+			lda #$01
+			sta dial			;dial=1
 			lda	mesl			;carga mesl al acumulador
-			add	#$01				;suma 1 al acumulador
+			add	#$01			;suma 1 al acumulador
 			sta mesl			;carga a mesl el acumulador
 			
-vd5:		lda #$06			    ;carga 10 al acumulador
+vd5:		lda #$06			;carga 6 al acumulador
 			cmp minh			;compara con minh
-			bne	vd6				;si es diferente va a sr1
-			lda #$00				;si minh==6
+			bne	vd6				;si es diferente va a vd6
+			lda #$00		    ;si minh==6
 			sta	minh			;minh=0
 			lda	horal			;carga horal al acumulador
-			add	#$01				;suma 1 al acumulador
+			add	#$01			;suma 1 al acumulador
 			sta horal			;carga a horal el acumulador
 			
 			
-vd6:		lda #$02			    ;carga 10 al acumulador
-			cmp horah			;compara con minh
-			bne	vd7				;si es diferente va a sr1
-			lda #$04				;si minh==6
-			cmp	horal			;minh=0
-			bne	sr1			;carga horal al acumulador
-			lda #$00				;suma 1 al acumulador
-			sta horah
-			sta horal			;carga a horal el acumulador
+vd6:		lda #$02			;carga 2 al acumulador
+			cmp horah			;compara con horah
+			bne	vd7				;si es diferente va a vd7
+								;si horah==2
+			lda #$04			;carga 4 al acumulador
+			cmp	horal			;compara con horal
+			bne	vd7				;si es diferente va a vd7
+			lda #$00			;si horal==4
+			sta horah			;horah=0
+			sta horal			;horal=0
+			sta minh			;minh=0
+			sta mil				;minl=0
 					
 			
-vd7:		lda #$01			    ;carga 10 al acumulador
-			cmp mesh			;compara con minh
+vd7:		lda #$01			;carga 1 al acumulador
+			cmp mesh			;compara con mesh
 			bne	sr1				;si es diferente va a sr1
-			lda #$02				;si minh==6
-			cmp	mesl			;minh=0
-			bne	sr1			;carga horal al acumulador
-			lda #$00				;suma 1 al acumulador
-			sta mesh
-			sta mesl			;carga a horal el acumulador
+			lda #$02			;carga 2 al acumulador
+			cmp	mesl			;compara con mesl
+			bne	sr1			    ;si es diferente va a sr1
+								;si mesh=1 y mesl=2
+			lda #$00			;carga 0 al acumulador
+			sta mesh			;mesh=0
+			sta diah			;diah=0
+			lda #$01			;carga 1 al acumulador
+			sta	mesl			;mesl=1
+			sta dial			;dial=1
 			jmp r1	
 			
 			
 sr1:		rts
-
-segundo:	lda #%11010100
-			cmp seg
-			beq aum_seg_aux
-			lda seg
-			add #$01
+;****************************************************************************:
+; rutna para establecer el segundero del sistema                             ;
+; la ejecución del mainLoop toma 4716 ciclos de bus, el cual opera a 4MHz    ;
+; de tal forma se ejecuta 848 veces en un segundo, para efectos de contar    ;
+; se decidio dividir dicho valor entre 4 obteniendo 212; asi se procede a la ;
+; siguiente rutina                                                           ;
+; seg cuenta hasta 212, seg_aux cuenta 4 veces eso, finalmente segundos	     ;
+; cuenta los segundos transcurridos											 ;
+;****************************************************************************;																			 ;
+segundo:	lda #%11010100		;carga 212 al acumulador
+			cmp seg				;compara con segundo
+			beq aum_seg_aux		;si es igual va a aum_seg_aux
+			lda seg				;si no es igual
+			add #$01			;incrementa en 1 seg
 			sta seg
 			rts
 aum_seg_aux:
-			lda #$00  
-			sta seg
-			lda #$04
-			cmp seg_aux
-			beq cambio_seg
-			lda seg_aux
+			lda #$00  			
+			sta seg				;asigna 0 a seg
+			lda #$04			
+			cmp seg_aux			; compara seg_aux con 4
+			beq cambio_seg		;si es igual va a cambio_seg
+			lda seg_aux			
 			add #$01
-			sta seg_aux
+			sta seg_aux			;incrementa en 1 seg_aux
 			rts
 			
 cambio_seg: lda #$00
-			sta	seg_aux
+			sta	seg_aux			;asigna 0 a seg_aux
 			lda segundos
 			add	#$01
-			sta	segundos
+			sta	segundos		;incrementa en 1 segundos
 			
-			brclr 4,PTAD,stx2
-			brset 4,PTAD,stx1
+			brclr 4,PTAD,stx2	;si PTA4== 0 va a stx2
+			brset 4,PTAD,stx1	;si PTA4== 0 va a stx1
 		
-stx1:		bclr 4,PTAD	
-			jmp stx3
+stx1:		bclr 4,PTAD			;PTA4=0	
+			jmp stx3			;va a stx3
 		
-stx2:		bset 4,PTAD
-			jmp stx3
+stx2:		bset 4,PTAD			;PTA4=1
+			jmp stx3			;va a stx3
 
-stx3:		lda #$3C
-			cmp segundos
-			bra	stx4
-			jmp r1			
+stx3:		lda #$3C			
+			cmp segundos		;compara segundos con 60
+			bra	stx4			;si es igual va a stx4
+			jmp r1				;si no vuelve a r1
 
-stx4:		lda minl
+stx4:		lda minl			
 			add	#$01
-			sta	minl
-			jmp r1	
+			sta	minl			;suma 1 a minl
+			jmp r1				;vuelve a r1
 			
 		
 			
