@@ -546,7 +546,7 @@ sr1:		rts
 ; se decidio dividir dicho valor entre 4 obteniendo 212; asi se procede a la ;
 ; siguiente rutina                                                           ;
 ; seg cuenta hasta 212, seg_aux cuenta 4 veces eso, finalmente segundos	     ;
-; cuenta los segundos transcurridos											 ;
+; cuenta los segundos transcurridos					     ;
 ;****************************************************************************;																			 ;
 segundo:	lda #%11010100		;carga 212 al acumulador
 			cmp seg				;compara con segundo
