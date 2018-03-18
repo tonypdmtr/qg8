@@ -519,7 +519,7 @@ vd6:		lda #$02			;carga 2 al acumulador
 			sta horah			;horah=0
 			sta horal			;horal=0
 			sta minh			;minh=0
-			sta mil				;minl=0
+			sta minl				;minl=0
 					
 			
 vd7:		lda #$01			;carga 1 al acumulador
