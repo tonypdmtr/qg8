@@ -212,7 +212,7 @@ clrfkbi:
 			jmp 	mainLoop			
 			
  ;***********************************************************************************;
- ;			                 Configuracion del KBI                                   ;   
+ ;			                 Configuracion del KBI                       ;   
  ;                                                                                   ;
  ; KBISC_MOD= 1b1 --> detecta flanco y nivel                                         ;
  ;                                                                                   ;
@@ -229,9 +229,9 @@ kbi_conf:
 			sta	  KBIES		;2 Seleccionar pull up/down 0/1 activa con 0/activa con 1
 			
 			lda   #%00000111
-			sta   PTAPE		;3 Configurar pullup de los pines ausar
+			sta   PTAPE		;3 Configurar pullup de los pines a usar
 			lda   #%00000111
-			sta	  KBIPE		;4 PTB3 como KBI, configurar pin KBI a usar
+			sta	  KBIPE		;4 Configurar pines KBI a usar
 			lda	  KBISC
 			ora	  #%00000100
 			sta	  KBISC		;5 ACK=1
