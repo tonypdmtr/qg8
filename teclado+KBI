@@ -57,19 +57,8 @@ loop1:  brset 0,PTAD,loop1
         lda rowa
         sta	row
 		lda #$01
-		cmp	fkbi
-		beq st11
-		bne	st22
-		
-st11:	
-		lda #$00
 		sta	fkbi
-		bra kbi_fin
 		
-st22:	
-		lda #$01
-		sta	fkbi
-		bra kbi_fin
 
 kbi_fin:
 		 
