@@ -4,11 +4,14 @@
 ;* Microcontroladores 2018-I                                       *
 ;* Programador:                                                    *
 ;* -Sebastian Cepeda Espinosa                                      *
-;* -Javier Mauricio Pinilla Garcia                    			   *
+;* -Javier Mauricio Pinilla Garcia                    		   *
 ;* Version: 1.0                                                    *
 ;* Microcontrolador: MC9S08QG8CPBE                                 *
-;* Codigo para usar 4 display 7 segmento con el fin de implementar *
-;* un reloj y un calendario cuyo cambio esta dado por IRQ          *
+;* Codigo para leer un teclado matricial 4x4, almacenar 5 valores  *
+;* y mostrarlos ciclicamente en 4 displays 7 segmentos, al         *
+;* presionar cada tecla un buzzer emite un sonido y hay un boton   *
+;* que habilita/deshabilita el teclado                             *
+;*                                                                 *
 ;*******************************************************************
 
 ; Include derivative-specific definitions
