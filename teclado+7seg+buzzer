@@ -16,7 +16,7 @@
             
 
 ; export symbols
-            XDEF _Startup, main, intirq, kbirutina
+            XDEF _Startup, main, intirq, kbirutina,rutinaRTC
             ; we export both '_Startup' and 'main' as symbols. Either can
             ; be referenced in the linker .prm file or from C/C++ later on
             
@@ -39,6 +39,7 @@ numb:		ds.b   1
 numc:		ds.b   1
 numd:		ds.b   1
 nume:		ds.b   1
+aux:		ds.b   1
 escrito:    ds.b   1
 tono:       ds.b   1
 
@@ -119,7 +120,28 @@ kbi_fin:
 		bset KBISC_KBIE,KBISC
 		pulh
 		rti		
-		
+; =============== Rutina RTC ==========================
+rutinaRTC:  pshh
+            lda      SRTISC
+            ora      #%01000000
+            sta      SRTISC                    ; Borra la bandera de interrupcion
+            
+            ;rutina de interrupcion
+            lda		nume
+            sta		aux
+            lda 	numd
+			sta		nume
+			lda 	numc
+			sta		numd
+			lda 	numb
+			sta		numc
+			lda 	numa
+			sta		numb
+			lda 	aux
+			sta		numa
+            
+            pulh
+            rti		
 ; =============== Main Program ==========================
 ProgMain:  SECTION
 main:
@@ -128,7 +150,7 @@ _Startup:
             TXS
 			; ========= Rutina configuracion de IRQ
             jsr   conf_IRQ  
-
+			jsr   configRTC
 			lda   #$52
 			sta   SOPT1 ; Desactivar watchdog
 			lda	  #$00
@@ -325,6 +347,7 @@ sonar:
 			beq	  s9
 fsonar:		
 			lda   #$ff
+			sub   numero
 t1:			psha
 			lda	  tono
 			jsr   retardo
@@ -505,8 +528,15 @@ esc9: 		lda   PTBD 			;Escribir 8b1000xxxx
 			sta	  PTBD
 			lda   escrito	
 			jmp   nf
-
-
+;Subrutina de configuración de interupción por tiempo
+configRTC:  bclr     5, SRTISC     ; Habilita el reloj de referencia interno RTICLKS (32.768 kHz por defecto - revisar hoja de datos del uC seleccionado)
+            lda      #%01010111
+;                        ||  |            
+;                        ||  +----------------- interrupcion cada segundo 
+;                        |+-------------------- Interrupcion temporizada cada 1 segundo habilitada
+;                        |+-------------------- IRCLK seleccionado como fuente de reloj del modulo RTC
+            sta      SRTISC
+            rts
 
 ;Subrutina de configuraciÛn del Modulo IRQ
 conf_IRQ:     ; Label de la Interrupción
