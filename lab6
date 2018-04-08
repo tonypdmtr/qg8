@@ -1,0 +1,61 @@
+#include <hidef.h> /* for EnableInterrupts macro */
+#include "derivative.h" /* include peripheral declarations */
+/* define cuando un led esta encendido o apagado*/
+#define ON	1
+#define OFF	0
+
+
+/* define los leds*/
+/*#define LED_VERDE PTxD_PTxDx
+#define LED_AMARILLO PTxD_PTxDx
+ define los pulsadores*/
+/*#define PULSADOR1 PTxD_PTxDx
+#define PULSADOR2 PTxD_PTxDx
+#define PULSADOR3 PTxD_PTxDx
+#define PULSADOR4 PTxD_PTxDx
+*/
+
+void kbi_conf(void);
+void main(void) {
+  
+	SOPT1 =0X52;
+	kbi_conf();
+	EnableInterrupts;
+	
+	
+	for (;;) {
+	
+	}
+}
+  
+
+
+
+
+void kbi_conf(void){
+	KBISC=(KBISC_KBIMOD|!KBISC_KBIE|KBISC_KBACK);
+	
+	PTAPE_PTAPE0=1;
+	PTAPE_PTAPE1=1;
+	PTAPE_PTAPE2=1;
+	PTAPE_PTAPE3=1;
+	
+	KBIPE_KBIPE0=1;
+	KBIPE_KBIPE1=1;
+	KBIPE_KBIPE2=1;
+	KBIPE_KBIPE3=1;
+	
+	KBISC_KBACK=1;
+	
+	KBISC_KBIE=1;
+	
+}
+
+/*void ver_led_verde(void){
+	if(pulsador1|pulsador2|pulsador3|pulsador4){
+		
+	}else{
+		LED_VERDE=ON;
+		
+	}
+}*/
