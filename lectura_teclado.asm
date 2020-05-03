@@ -21,8 +21,7 @@ numero              rmb       1
                     #ROM
 ;*******************************************************************************
 
-main
-_Startup            proc                          ; 0->in 1->out
+Start               proc                          ; 0->in 1->out
                     ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
                     txs
                     lda       #$52
@@ -53,70 +52,61 @@ _Startup            proc                          ; 0->in 1->out
 ;*******************************************************************************
 
 MainLoop            proc
-                    ...       Insert your code here
+Loop@@              ...       Insert your code here
                     nop
                     lda       #%00000001          ; row 1 = 1
                     sta       PTBD
-                    brset     0,PTAD,num1         ; col 1 = 1
-                    brset     1,PTAD,num2         ; col 2 = 1
-                    brset     2,PTAD,num3         ; col 3 = 1
+                    brset     0,PTAD,_1@@         ; col 1 = 1
+                    brset     1,PTAD,_2@@         ; col 2 = 1
+                    brset     2,PTAD,_3@@         ; col 3 = 1
 
                     nop
                     lda       #%00000010          ; row 2 = 1
                     sta       PTBD
-                    brset     0,PTAD,num4         ; col 1 = 1
-                    brset     1,PTAD,num5         ; col 2 = 1
-                    brset     2,PTAD,num6         ; col 3 = 1
+                    brset     0,PTAD,_4@@         ; col 1 = 1
+                    brset     1,PTAD,_5@@         ; col 2 = 1
+                    brset     2,PTAD,_6@@         ; col 3 = 1
 
                     nop
                     lda       #%00000100          ; row 3 = 1
                     sta       PTBD
-                    brset     0,PTAD,num7         ; col 1 = 1
-                    brset     1,PTAD,num8         ; col 2 = 1
-                    brset     2,PTAD,num9         ; col 3 = 1
+                    brset     0,PTAD,_7@@         ; col 1 = 1
+                    brset     1,PTAD,_8@@         ; col 2 = 1
+                    brset     2,PTAD,_9@@         ; col 3 = 1
 
                     nop
                     lda       #%00001000          ; row 4 = 1
                     sta       PTBD
-                    brset     0,PTAD,num0         ; col 1 = 1
-                    bra       MainLoop
+                    brset     0,PTAD,_0@@         ; col 1 = 1
+                    bra       Loop@@
 
-num1                lda       #1
-                    sta       numero
-                    bra       MainLoop
+_1@@                lda       #1
+                    bra       Cont@@
 
-num2                lda       #2
-                    sta       numero
-                    bra       MainLoop
+_2@@                lda       #2
+                    bra       Cont@@
 
-num3                lda       #3
-                    sta       numero
-                    bra       MainLoop
+_3@@                lda       #3
+                    bra       Cont@@
 
-num4                lda       #4
-                    sta       numero
-                    bra       MainLoop
+_4@@                lda       #4
+                    bra       Cont@@
 
-num5                lda       #5
-                    sta       numero
-                    bra       MainLoop
+_5@@                lda       #5
+                    bra       Cont@@
 
-num6                lda       #6
-                    sta       numero
-                    bra       MainLoop
+_6@@                lda       #6
+                    bra       Cont@@
 
-num7                lda       #7
-                    sta       numero
-                    bra       MainLoop
+_7@@                lda       #7
+                    bra       Cont@@
 
-num8                lda       #8
-                    sta       numero
-                    bra       MainLoop
+_8@@                lda       #8
+                    bra       Cont@@
 
-num9                lda       #9
-                    sta       numero
-                    bra       MainLoop
+_9@@                lda       #9
+                    bra       Cont@@
 
-num0                clra
-                    sta       numero
-                    bra       MainLoop
+_0@@                clra
+Cont@@              sta       numero
+                    bra       Loop@@

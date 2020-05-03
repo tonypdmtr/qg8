@@ -15,8 +15,7 @@
 
 ;*******************************************************************************
 
-main
-_Startup            proc
+Start               proc
                     ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
@@ -31,15 +30,15 @@ MainLoop            proc
                     sta       PTADD
 Loop@@              lda       #%00000000
                     sta       PTAD
-                    jsr       retardo
+                    bsr       Delay
                     lda       #%11111111
                     sta       PTAD
-                    jsr       retardo
+                    bsr       Delay
                     bra       Loop@@
 
 ;*******************************************************************************
 
-retardo             proc
+Delay               proc
                     psha
                     lda       #1
 Loop@@              psha

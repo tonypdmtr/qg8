@@ -28,7 +28,7 @@ kbirutina           proc
                     pshh
                     bset      KBISC_KBACK,KBISC   ; Reconocimiento de int y forza la bandera a 0.
                     bclr      KBISC_KBIE,KBISC
-                    jsr:4     delay
+                    bsr:4     Delay
                     brclr     3,PTBD,*
 
                     lda       #1
@@ -40,7 +40,6 @@ kbirutina           proc
 
 _1@@                lda       #1
                     sta       estado
-                    bra       Done@@
 
 Done@@              bset      KBISC_KBIE,KBISC
                     pulh
@@ -79,7 +78,7 @@ _Startup            proc
 
                     clra
                     sta       estado
-                    jsr       conf_IRQ
+                    bsr       ConfigIRQ
                     cli
 ;                   bra       MainLoop
 
@@ -89,10 +88,10 @@ MainLoop            proc
                     lda       #1
                     cmp       estado
                     beq       _1@@
-                    bsr:4     delay
+                    bsr:4     Delay
                     lda       #1
                     sta       PTAD
-                    bsr:4     delay
+                    bsr:4     Delay
                     clra
                     sta       PTAD
                     bra       MainLoop
@@ -102,7 +101,7 @@ _1@@                lda       #1
 
 ;*******************************************************************************
 
-delay               proc
+Delay               proc
                     psha
                     lda       #$ff
 Loop@@              psha
@@ -112,3 +111,7 @@ Loop@@              psha
                     dbnza     Loop@@
                     pula
                     rts
+
+;*******************************************************************************
+ConfigIRQ           def       :AnRTS
+;*******************************************************************************

@@ -24,16 +24,16 @@ var3                rmb       4
                     #ROM
 ;*******************************************************************************
 
-main
-_Startup            proc
+Start               proc
                     ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
 ;                   bra       MainLoop
 
 ;*******************************************************************************
+
 MainLoop            proc
-                    ...       Insert your code here
+Loop@@              ...       Insert your code here
                     lda       #2
                     sta       var1
                     sta       var2
@@ -59,4 +59,4 @@ MainLoop            proc
                     sta       var11               ; escribe en la parte alta de la variable
 
                     feed_watchdog
-                    bra       MainLoop
+                    bra       Loop@@

@@ -17,9 +17,7 @@ configRTC           proc
 ; Rutina de interrupcion temporizada
 
 rutinaRTC           proc
-                    pshh
                     lda       SRTISC
                     ora       #%01000000
                     sta       SRTISC              ; Borra la bandera de interrupcion
-                    pulh
                     rti

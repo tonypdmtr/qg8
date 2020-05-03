@@ -29,14 +29,10 @@ col                 rmb       1                   ; col activada cuando se dio l
                     #ROM                          ;Javier: SECTION
 ;*******************************************************************************
 
-;*******************************************************************************
-; Rutina  de Interrupcion por KBI
-
-kbirutina           proc
-                    pshh
+KBI_Handler         proc
                     bset      KBISC_KBACK,KBISC   ; Reconocimiento de int y forza la bandera a 0.
                     bclr      KBISC_KBIE,KBISC
-                    jsr:4     delay1
+                    jsr:4     Delay
                     lda       PTAD
                     sta       col
 
@@ -50,13 +46,11 @@ Loop@@              brset     0,PTAD,*
                     sta       fkbi
 
                     bset      KBISC_KBIE,KBISC
-                    pulh
                     rti
 
 ;*******************************************************************************
 
-main                proc
-_Startup
+Start               proc
                     ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
                     txs
 
@@ -75,9 +69,9 @@ _Startup
                               ; ||||||___col 3
                     sta       PTADD
                     lda       #%00000111          ; pull up puertos de lectura
-                    ; ||||||||_col 1
-                    ; |||||||__col 2
-                    ; ||||||___col 3
+                              ; ||||||||_col 1
+                              ; |||||||__col 2
+                              ; ||||||___col 3
 ;                   sta       PTAPE
 
                     lda       #%00001111          ; Puertos de escritura
@@ -162,35 +156,35 @@ num2                lda       #2
 
 num3                lda       #3
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num4                lda       #4
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num5                lda       #5
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num6                lda       #6
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num7                lda       #7
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num8                lda       #8
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num9                lda       #9
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 num0                clra
                     sta       numero
-                    jmp       clrfkbi
+                    bra       clrfkbi
 
 clrfkbi             clra
                     sta       fkbi
@@ -198,14 +192,10 @@ clrfkbi             clra
 
 ;*******************************************************************************
 ; Configuracion del KBI
-;
 ; KBISC_MOD= 1b1 --> detecta flanco y nivel
-;
 ; PTAPE = #%00000111 --> activa dispositivo de pull up en pines KBI a usar
-;
 ; KBIES = FF --> selecciona resistencia de pull down, la interrupcion
 ; se activa con un 1 en el pin
-;*******************************************************************************
 
 kbi_conf            proc
                     lda       #%00000001
@@ -227,11 +217,13 @@ kbi_conf            proc
 
 ;*******************************************************************************
 
-delay1              proc
+Delay               proc
+                    psha
                     lda       #1
 Loop@@              psha
                     lda       #$ff
                     dbnza     *
                     pula
                     dbnza     Loop@@
+                    pula
                     rts

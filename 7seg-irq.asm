@@ -13,16 +13,7 @@
 
                     #Uses     mc9s08qg8.inc
 
-__SEG_END_SSTACK    equ       $100
-
-; export symbols
-; XDEF _Startup, main, IRQ_Handler
-; we export both '_Startup' and 'main' as symbols. Either can
-; be referenced in the linker .prm file or from C/C++ later on
-
-
-
-; XREF __SEG_END_SSTACK   ; symbol defined by the linker for the end of the stack
+                    XREF      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
 
 ;*******************************************************************************
                     #RAM                          ;MY_ZEROPAGE: SECTION SHORT
@@ -75,14 +66,11 @@ Done@@              bset      IRQSC_IRQIE,IRQSC
 ;*******************************************************************************
 ; Main Program
 
-main
-_Startup            proc
+Start               proc
                     ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
                     txs
-                    bsr       init
+                    bsr       Init
                     jsr       conf_IRQ            ;Rutina configuracion de IRQ
-
-; ========= Habilita procesar interrupciones
                     cli                           ; enable interrupts
 ;                   bra       MainLoop
 
@@ -99,7 +87,7 @@ r1                  equ       Loop@@
 
 ;*******************************************************************************
 
-init                proc
+Init                proc
                     lda       #$52
                     sta       SOPT1               ; Desactivar watchdog y BKGD como PTA4
                     lda       #%00011111
@@ -238,119 +226,146 @@ esc0                proc
                     sta       PTBD
                     bra       n1
 
-esc1                lda       PTBD                ; Escribir 8b0001xxxx
+;*******************************************************************************
+
+esc1                proc
+                    lda       PTBD                ; Escribir 8b0001xxxx
                     and       #%00001111
                     ora       #%00010000
                     sta       PTBD
                     bra       n2
 
-esc2                lda       PTBD                ; Escribir 8b0010xxxx
+;*******************************************************************************
+
+esc2                proc
+                    lda       PTBD                ; Escribir 8b0010xxxx
                     and       #%00001111
                     ora       #%00100000
                     sta       PTBD
                     bra       n3
 
-esc3                lda       PTBD                ; Escribir 8b0011xxxx
+;*******************************************************************************
+
+esc3                proc
+                    lda       PTBD                ; Escribir 8b0011xxxx
                     and       #%00001111
                     ora       #%00110000
                     sta       PTBD
                     bra       n4
 
-esc4                lda       PTBD                ; Escribir 8b0100xxxx
+;*******************************************************************************
+
+esc4                proc
+                    lda       PTBD                ; Escribir 8b0100xxxx
                     and       #%00001111
                     ora       #%01000000
                     sta       PTBD
                     bra       n5
 
-esc5                lda       PTBD                ; Escribir 8b0101xxxx
+;*******************************************************************************
+
+esc5                proc
+                    lda       PTBD                ; Escribir 8b0101xxxx
                     and       #%00001111
                     ora       #%01010000
                     sta       PTBD
                     bra       n6
 
-esc6                lda       PTBD                ; Escribir 8b0110xxxx
+;*******************************************************************************
+
+esc6                proc
+                    lda       PTBD                ; Escribir 8b0110xxxx
                     and       #%00001111
                     ora       #%01100000
                     sta       PTBD
                     bra       n7
 
-esc7                lda       PTBD                ; Escribir 8b0111xxxx
+;*******************************************************************************
+
+esc7                proc
+                    lda       PTBD                ; Escribir 8b0111xxxx
                     and       #%00001111
                     ora       #%01110000
                     sta       PTBD
                     bra       n8
 
-esc8                lda       PTBD                ; Escribir 8b1000xxxx
+;*******************************************************************************
+
+esc8                proc
+                    lda       PTBD                ; Escribir 8b1000xxxx
                     and       #%00001111
                     ora       #%10000000
                     sta       PTBD
                     bra       n9
 
-esc9                lda       PTBD                ; Escribir 8b1000xxxx
+;*******************************************************************************
+
+esc9                proc
+                    lda       PTBD                ; Escribir 8b1000xxxx
                     and       #%00001111
                     ora       #%10010000
                     sta       PTBD
                     bra       nf
 
-verif                                             ; Función para verificar el estado de las entradas de los pulsadores
+;*******************************************************************************
+
+verif               proc                          ; Función para verificar el estado de las entradas de los pulsadores
                     lda       #%00000001          ; Verificación de cambios en el pulsador1 PTB0
                     and       PTBD
-                    beq       aug1
+                    beq       _4@@
                     bra       verack1
 
-v1                  lda       #%00000010          ; Verificación de cambios en el pulsador2 PTB1
+_1@@                lda       #%00000010          ; Verificación de cambios en el pulsador2 PTB1
                     and       PTBD
                     beq       aug2
                     bra       verack2
 
-v2                  lda       #%00000100          ; Verificación de cambios en el pulsador3 PTB2
+_2@@                lda       #%00000100          ; Verificación de cambios en el pulsador3 PTB2
                     and       PTBD
                     beq       aug3
                     bra       verackc
 
-v3                  lda       #%00001000          ; Verificación de cambios en el pulsador4 PTB3
+_3@@                lda       #%00001000          ; Verificación de cambios en el pulsador4 PTB3
                     and       PTBD
                     beq       aug4
                     bra       verack4
-
-veriffin            rts
                                                   ; Para el pulsador 1
-aug1                lda       acka                ; Verificación para evitar repetición de aumento del registro
+_4@@                lda       acka                ; Verificación para evitar repetición de aumento del registro
                     beq       a1
-aug1r               bra       v1
+_5@@                bra       _1@@
                                                   ; Para el pulsador 2:
 aug2                clra                          ; Verificación para evitar repetición de aumento del registro
                     cmpa      ackb
                     beq       a2
-aug2r               bra       v2
+aug2r               bra       _2@@
                                                   ; Para el pulsador 3:
 aug3                lda       ackc                ; Verificación para evitar repetición de aumento del registro
                     beq       a3
-aug3r               bra       v3
+aug3r               bra       _3@@
                                                   ; Para el pulsador 4:
 aug4                lda       ackd                ; Verificación para evitar repetición de aumento del registro
                     beq       a4
-aug4r               bra       veriffin
+aug4r               rts
 
 verack1             lda       acka                ; subrutina de limpieza de acknoledge para el pulsador dado
                     cmpa      #1
                     beq       vack1
-verack1r            bra       v1
+verack1r            bra       _1@@
 
 verack2             lda       ackb                ; subrutina de limpieza de acknoledge para el pulsador dado
                     cmpa      #1
                     beq       vack2
-verack2r            bra       v2
+verack2r            bra       _2@@
 
 verackc             lda       ackc                ; subrutina de limpieza de acknoledge para el pulsador dado
                     cmpa      #1
                     beq       vackc
-verackcr            bra       v3
+verackcr            bra       _3@@
 
 verack4             lda       ackd                ; subrutina de limpieza de acknoledge para el pulsador dado
                     cmpa      #1
                     beq       vack4
-verack4r            bra       veriffin
+verack4r            rts
 
 vack1               clra
                     sta       acka
@@ -373,84 +388,62 @@ a1                  lda       estado              ; subrutina de selección de r
                     beq       a1fecha
                     bra       a1hora
 
-a1r                 bra       aug1r
-
 a2                  lda       estado              ; subrutina de selección de registro para aumento según estado
                     cmpa      #1
                     beq       a2fecha
                     bra       a2hora
-
-a2r                 bra       aug2r
 
 a3                  lda       estado              ; subrutina de selección de registro para aumento según estado
                     cmpa      #1
                     beq       a3fecha
                     bra       a3hora
 
-a3r                 bra       aug3r
-
 a4                  lda       estado              ; subrutina de selección de registro para aumento según estado
                     cmpa      #1
                     beq       a4fecha
                     bra       a4hora
 
-a4r                 bra       aug4r
-
-a1fecha             lda       mesh                ; subrutina de aumento del registro fecha para el pin dado
-                    add       #1
-                    sta       mesh
+a1fecha             inc       mesh                ; subrutina de aumento del registro fecha para el pin dado
                     lda       #1
                     sta       acka
-                    bra       a1r
+                    bra       _5@@
 
-a1hora              lda       horah               ; subrutina de aumento del registro hora para el pin dado
-                    add       #1
-                    sta       horah
+a1hora              inc       horah               ; subrutina de aumento del registro hora para el pin dado
                     lda       #1
                     sta       acka
-                    bra       a1r
+                    bra       _5@@
 
-a2fecha             lda       mesl                ; subrutina de aumento del registro fecha para el pin dado
-                    add       #1
-                    sta       mesl
+a2fecha             inc       mesl                ; subrutina de aumento del registro fecha para el pin dado
                     lda       #1
                     sta       ackb
-                    bra       a2r
+?aug2r              bra       aug2r
 
-a2hora              lda       horal               ; subrutina de aumento del registro hora para el pin dado
-                    add       #1
-                    sta       horal
+a2hora              inc       horal               ; subrutina de aumento del registro hora para el pin dado
                     lda       #1
                     sta       ackb
-                    bra       a2r
+                    bra       ?aug2r
 
-a3fecha             lda       diah                ; subrutina de aumento del registro fecha para el pin dado
-                    add       #1
-                    sta       diah
+a3fecha             inc       diah                ; subrutina de aumento del registro fecha para el pin dado
                     lda       #1
                     sta       ackc
-                    bra       a3r
+                    jmp       aug3r
 
-a3hora              lda       minh                ; subrutina de aumento del registro hora para el pin dado
-                    add       #1
-                    sta       minh
+a3hora              inc       minh                ; subrutina de aumento del registro hora para el pin dado
                     lda       #1
                     sta       ackc
-                    bra       a3r
+                    jmp       aug3r
 
-a4fecha             lda       dial                ; subrutina de aumento del registro fecha para el pin dado
-                    add       #1
-                    sta       dial
+a4fecha             inc       dial                ; subrutina de aumento del registro fecha para el pin dado
                     lda       #1
                     sta       ackd
-                    bra       a4r
+                    bra       ?aug4r
 
-a4hora              lda       minl                ; subrutina de aumento del registro hora para el pin dado
-                    add       #1
-                    sta       minl
+a4hora              inc       minl                ; subrutina de aumento del registro hora para el pin dado
                     lda       #1
                     sta       ackd
-                    bra       a4r
+?aug4r              jmp       aug4r
+
+;*******************************************************************************
 
 verif_digito        proc
                     lda       #10                 ; carga 10 al acumulador
@@ -458,36 +451,28 @@ verif_digito        proc
                     bne       vd1                 ; si es diferente va a vd1
                     clra                          ; si minl==10
                     sta       minl                ; minl=0
-                    lda       minh                ; carga minh al acumulador
-                    add       #1                  ; suma 1 al acumulador
-                    sta       minh                ; carga a minh el acumulador
+                    inc       minh                ; suma 1 al acumulador
 
 vd1                 lda       #10                 ; carga 10 al acumulador
                     cmpa      dial                ; compara con dial
                     bne       vd2                 ; si es diferente va a vd2
                     clra                          ; si dial==10
                     sta       dial                ; dial=0
-                    lda       diah                ; carga diah al acumulador
-                    add       #$01                ; suma 1 al acumulador
-                    sta       diah                ; carga a diah el acumulador
+                    inc       diah                ; suma 1 al acumulador
 
 vd2                 lda       #10                 ; carga 10 al acumulador
                     cmpa      horal               ; compara con horal
                     bne       vd3                 ; si es diferente va a vd3
                     clra                          ; si horal==10
                     sta       horal               ; horal=0
-                    lda       horah               ; carga horah al acumulador
-                    add       #1                  ; suma 1 al acumulador
-                    sta       horah               ; carga a horah el acumulador
+                    inc       horah               ; suma 1 al acumulador
 
 vd3                 lda       #10                 ; carga 10 al acumulador
                     cmpa      mesl                ; compara con mesl
                     bne       vd4                 ; si es diferente va a vd4
                     clra                          ; si mesl==10
                     sta       mesl                ; mesl=0
-                    lda       mesh                ; carga mesh al acumulador
-                    add       #1                  ; suma 1 al acumulador
-                    sta       mesh                ; carga a mesh el acumulador
+                    inc       mesh                ; suma 1 al acumulador
 
 vd4                 lda       #3                  ; carga 3 al acumulador
                     cmpa      diah                ; compara con diah
@@ -496,18 +481,14 @@ vd4                 lda       #3                  ; carga 3 al acumulador
                     sta       diah                ; diah=0
                     lda       #1
                     sta       dial                ; dial=1
-                    lda       mesl                ; carga mesl al acumulador
-                    add       #1                  ; suma 1 al acumulador
-                    sta       mesl                ; carga a mesl el acumulador
+                    inc       mesl                ; suma 1 al acumulador
 
 vd5                 lda       #6                  ; carga 6 al acumulador
                     cmpa      minh                ; compara con minh
                     bne       vd6                 ; si es diferente va a vd6
                     clra                          ; si minh==6
                     sta       minh                ; minh=0
-                    lda       horal               ; carga horal al acumulador
-                    add       #1                  ; suma 1 al acumulador
-                    sta       horal               ; carga a horal el acumulador
+                    inc       horal               ; suma 1 al acumulador
 
 vd6                 lda       #2                  ; carga 2 al acumulador
                     cmpa      horah               ; compara con horah
@@ -550,51 +531,42 @@ sr1                 rts
 segundo             proc
                     lda       #%11010100          ; carga 212 al acumulador
                     cmpa      seg                 ; compara con segundo
-                    beq       aum_seg_aux         ; si es igual va a aum_seg_aux
-                    lda       seg                 ; si no es igual
-                    add       #1                  ; incrementa en 1 seg
-                    sta       seg
+                    beq       _1@@                ; si es igual va a aum_seg_aux
+                    inc       seg                 ; incrementa en 1 seg
                     rts
 
-aum_seg_aux         clra
+_1@@                clra
                     sta       seg                 ; asigna 0 a seg
                     lda       #4
                     cmpa      seg_aux             ; compara seg_aux con 4
-                    beq       cambio_seg          ; si es igual va a cambio_seg
-                    lda       seg_aux
-                    add       #1
-                    sta       seg_aux             ; incrementa en 1 seg_aux
+                    beq       _2@@                ; si es igual va a cambio_seg
+                    inc       seg_aux             ; incrementa en 1 seg_aux
                     rts
 
-cambio_seg          clra
+_2@@                clra
                     sta       seg_aux             ; asigna 0 a seg_aux
-                    lda       segundos
-                    add       #1
-                    sta       segundos            ; incrementa en 1 segundos
+                    inc       segundos            ; incrementa en 1 segundos
 
-                    brclr     4,PTAD,stx2         ; si PTA4== 0 va a stx2
-                    brset     4,PTAD,stx1         ; si PTA4== 0 va a stx1
+                    brclr     4,PTAD,_4@@         ; si PTA4== 0 va a stx2
+                    brset     4,PTAD,_3@@         ; si PTA4== 0 va a stx1
 
-stx1                bclr      4,PTAD              ; PTA4=0
-                    bra       stx3                ; va a stx3
+_3@@                bclr      4,PTAD              ; PTA4=0
+                    bra       _5@@                ; va a _5@@
 
-stx2                bset      4,PTAD              ; PTA4=1
-;                   bra       stx3                ; va a stx3
+_4@@                bset      4,PTAD              ; PTA4=1
+;                   bra       _5@@                ; va a _5@@
 
-stx3                lda       #60
+_5@@                lda       #60
                     cmpa      segundos            ; compara segundos con 60
-                    beq       stx4                ; si es igual va a stx4
+                    beq       _6@@                ; si es igual va a _6@@
                     jmp       r1                  ; si no vuelve a r1
-stx4                lda       minl
-                    add       #1
-                    sta       minl                ; suma 1 a minl
+_6@@                inc       minl                ; suma 1 a minl
                     jmp       r1                  ; vuelve a r1
 
 ;*******************************************************************************
 ; Subrutina de configuraciÛn del Modulo IRQ
 
 conf_IRQ            proc                          ; Label de la Interrupción
-                              ; 76543210 Bits
                     lda       #%01010011
                               ; ||||||||
                               ; |||||||+--------- IRQMODE  = Flanco de Bajada

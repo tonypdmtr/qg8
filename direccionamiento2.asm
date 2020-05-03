@@ -25,8 +25,7 @@ var_b               rmb       1
                     #ROM
 ;*******************************************************************************
 
-main
-_Startup            proc
+Start               proc
                     ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
@@ -35,7 +34,7 @@ _Startup            proc
 ;*******************************************************************************
 
 MainLoop            proc
-                    ...       Insert your code here
+Loop@@              ...       Insert your code here
                     lda       #2                  ; IMM
                     sta       var_sb              ; DIR
                     sta       var_b               ; EXT
@@ -50,6 +49,7 @@ MainLoop            proc
                     sta       var_b,sp            ; SP2
                     mov       x+,var_sb           ; IX+
                     clrx
-                    cbeq      var_sb,x+,Finish    ; IX1+
-Finish              feed_watchdog
-                    bra       MainLoop
+                    cbeq      var_sb,x+,Done@@    ; IX1+
+                    nop
+Done@@              feed_watchdog
+                    bra       Loop@@
