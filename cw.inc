@@ -9,8 +9,6 @@
                     #Exit     _CW_
 _CW_
                     #Macro    @@
-                    #OptRelOff
-                    #OptRtsOff
                     #SpacesOn
                     #CaseOn
                     #MaxLabel 50
