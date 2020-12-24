@@ -151,9 +151,9 @@ W4@@                lda       #%00000010          ; enmascarar ptb2
 
 Delay               proc                          ; esperar 16^3 ciclos de reloj (aproximadamente)
                     psha
-                    lda       #$0F
+                    lda       #15
 Loop@@              psha
-                    lda       #$FF
+                    lda       #255
                     dbnza     *
                     pula
                     dbnza     Loop@@

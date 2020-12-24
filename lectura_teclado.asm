@@ -20,8 +20,7 @@ numero              rmb       1
 ;*******************************************************************************
 
 Start               proc                          ; 0->in 1->out
-                    ldhx      #STACKTOP           ; initialize the stack pointer
-                    txs
+                    @rsp                          ; initialize the stack pointer
                     lda       #$52
                     sta       SOPT1
                     clra
@@ -42,8 +41,7 @@ Start               proc                          ; 0->in 1->out
                     sta       PTBDD
                     lda       #%11110000
                     sta       PTBPE
-                    lda       #10
-                    sta       numero
+                    mov       #10,numero
                     cli                           ; enable interrupts
 ;                   bra       MainLoop
 
@@ -52,29 +50,25 @@ Start               proc                          ; 0->in 1->out
 MainLoop            proc
 Loop@@              !...      Insert your code here
                     nop
-                    lda       #%00000001          ; row 1 = 1
-                    sta       PTBD
+                    mov       #%00000001,PTBD     ; row 1 = 1
                     brset     0,PTAD,_1@@         ; col 1 = 1
                     brset     1,PTAD,_2@@         ; col 2 = 1
                     brset     2,PTAD,_3@@         ; col 3 = 1
 
                     nop
-                    lda       #%00000010          ; row 2 = 1
-                    sta       PTBD
+                    mov       #%00000010,PTBD     ; row 2 = 1
                     brset     0,PTAD,_4@@         ; col 1 = 1
                     brset     1,PTAD,_5@@         ; col 2 = 1
                     brset     2,PTAD,_6@@         ; col 3 = 1
 
                     nop
-                    lda       #%00000100          ; row 3 = 1
-                    sta       PTBD
+                    mov       #%00000100,PTBD     ; row 3 = 1
                     brset     0,PTAD,_7@@         ; col 1 = 1
                     brset     1,PTAD,_8@@         ; col 2 = 1
                     brset     2,PTAD,_9@@         ; col 3 = 1
 
                     nop
-                    lda       #%00001000          ; row 4 = 1
-                    sta       PTBD
+                    mov       #%00001000,PTBD     ; row 4 = 1
                     brset     0,PTAD,_0@@         ; col 1 = 1
                     bra       Loop@@
 
