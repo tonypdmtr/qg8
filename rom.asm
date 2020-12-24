@@ -52,13 +52,13 @@ Loop@@              lda       #$52
 
 _1@@                lda       #%00000100          ; enmascarar el bit PTBD_PTBD2
                     and       PTBD                ; Si ptb2 esta en 0 (modo data seleccionado, para este caso se desea modo address) se repite el ciclo hasta que este en 1
-                    jsr       Delay               ; llama la subrutina retardo
+                    jsr       Delay1ms            ; llama la subrutina retardo
                     tsta
                     beq       _1@@
 
 _2@@                lda       #%00000010          ; Enmascarar el bit PTBD_PTBD1
                     and       PTBD                ; Si ptb1 esta en 0 (input disable) se repite el ciclo hasta que este en 1
-                    jsr       Delay               ; llama la subrutina retardo
+                    jsr       Delay1ms            ; llama la subrutina retardo
                     tsta
                     beq       _2@@
           ;-------------------------------------- ; Asignar el valor de PTAD_PTAD0 à PTBD_PTBD6
@@ -78,12 +78,12 @@ _2@@                lda       #%00000010          ; Enmascarar el bit PTBD_PTBD1
                     ora       PTBD                ; Escritura del bit en el registro PTBD
                     sta       PTBD
 
-                    bsr       Delay               ; llama la subrutina retardo
+                    bsr       Delay1ms            ; llama la subrutina retardo
                     bclr      3,PTAD              ; Asignar 0b0 al bit PTBD_PTAD3, pin OE de la ROM
                     clrh                          ; Asignar 0x00 al registro H
                     ldx       #1                  ; Asigna 0x01 al Registro X
                     sta       data_address,x      ; Guarda la informacion en la parte baja de la variable
-                    bsr       Delay               ; llama la subrutina retardo
+                    bsr       Delay1ms            ; llama la subrutina retardo
                     bset      3,PTAD              ; Asignar 0b1 al bit PTAD_PTAD3 pin OE de la ROM
                     bra       Loop@@
 
@@ -115,7 +115,7 @@ W2@@                lda       #%00000010          ; enmascarar ptb1
                     lda       #%00000010          ; Lectura del bit PTAD_PTAD1
                     and       PTAD
                     ora       PTBD
-                    bsr       Delay               ; llama la subrutina retardo
+                    bsr       Delay1ms            ; llama la subrutina retardo
 
 W3@@                lda       #%00000100          ; enmascarar ptb2
                     and       PTBD                ; si esta en 1 vuelve a w4
@@ -140,22 +140,24 @@ W4@@                lda       #%00000010          ; enmascarar ptb2
                     lda       #%00000010          ; Lectura del bit PTAD_PTAD1
                     and       PTAD
                     ora       PTBD
-                    bsr       Delay               ; llama la subrutina retardo
+                    bsr       Delay1ms            ; llama la subrutina retardo
                     bset      2,PTAD
-                    bsr       Delay               ; llama la subrutina retardo
+                    bsr       Delay1ms            ; llama la subrutina retardo
                     bset      0,PTBD
                     bclr      3,PTAD
                     jmp       Loop@@
 
 ;*******************************************************************************
-
-Delay               proc                          ; esperar 16^3 ciclos de reloj (aproximadamente)
-                    psha
-                    lda       #15
-Loop@@              psha
-                    lda       #255
-                    dbnza     *
-                    pula
-                    dbnza     Loop@@
-                    pula
+                              #Cycles
+Delay1ms            proc                          ; esperar 16^3 ciclos de reloj (aproximadamente)
+                    pshhx
+                    ldhx      #DELAY@@
+                              #Cycles
+Loop@@              aix       #-1
+                    cphx      #0
+                    bne       Loop@@
+                              #temp :cycles
+                    pulhx
                     rts
+
+DELAY@@             equ       BUS_KHZ-:cycles-:ocycles/:temp
