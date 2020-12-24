@@ -147,43 +147,34 @@ ver3                brset     1,col,num0          ; col 1 = 1
                     bra       clrfkbi
 
 num1                lda       #1
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num2                lda       #2
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num3                lda       #3
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num4                lda       #4
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num5                lda       #5
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num6                lda       #6
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num7                lda       #7
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num8                lda       #8
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num9                lda       #9
-                    sta       numero
-                    bra       clrfkbi
+                    bra       ?clrfkbi
 
 num0                clra
-                    sta       numero
+?clrfkbi            sta       numero
 ;                   bra       clrfkbi
 
 clrfkbi             clra
