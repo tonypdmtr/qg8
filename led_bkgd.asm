@@ -28,21 +28,23 @@ MainLoop            proc
                     sta       PTADD
 Loop@@              lda       #%00000000
                     sta       PTAD
-                    bsr       Delay
+                    bsr       Delay1ms
                     lda       #%11111111
                     sta       PTAD
-                    bsr       Delay
+                    bsr       Delay1ms
                     bra       Loop@@
 
 ;*******************************************************************************
-
-Delay               proc
-                    psha
-                    lda       #1
-Loop@@              psha
-                    lda       #$ff
-                    dbnza     *
-                    pula
-                    dbnza     Loop@@
-                    pula
+                              #Cycles
+Delay1ms            proc                          ; esperar 16^3 ciclos de reloj (aproximadamente)
+                    pshhx
+                    ldhx      #DELAY@@
+                              #Cycles
+Loop@@              aix       #-1
+                    cphx      #0
+                    bne       Loop@@
+                              #temp :cycles
+                    pulhx
                     rts
+
+DELAY@@             equ       BUS_KHZ-:cycles-:ocycles/:temp

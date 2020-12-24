@@ -26,7 +26,7 @@ kbirutina           proc
                     pshh
                     bset      KBACK.,KBISC        ; Reconocimiento de int y forza la bandera a 0.
                     bclr      KBIE.,KBISC
-                    bsr:4     Delay
+                    bsr:4     Delay1ms
                     brclr     3,PTBD,*
 
                     lda       #1
@@ -86,10 +86,10 @@ MainLoop            proc
                     lda       #1
                     cmp       estado
                     beq       _1@@
-                    bsr:4     Delay
+                    bsr:4     Delay1ms
                     lda       #1
                     sta       PTAD
-                    bsr:4     Delay
+                    bsr:4     Delay1ms
                     clra
                     sta       PTAD
                     bra       MainLoop
@@ -98,17 +98,19 @@ _1@@                lda       #1
                     bra       MainLoop
 
 ;*******************************************************************************
-
-Delay               proc
-                    psha
-                    lda       #$ff
-Loop@@              psha
-                    lda       #$ff
-                    dbnza     *
-                    pula
-                    dbnza     Loop@@
-                    pula
+                              #Cycles
+Delay1ms            proc                          ; esperar 16^3 ciclos de reloj (aproximadamente)
+                    pshhx
+                    ldhx      #DELAY@@
+                              #Cycles
+Loop@@              aix       #-1
+                    cphx      #0
+                    bne       Loop@@
+                              #temp :cycles
+                    pulhx
                     rts
+
+DELAY@@             equ       BUS_KHZ-:cycles-:ocycles/:temp
 
 ;*******************************************************************************
 ConfigIRQ           def       :AnRTS

@@ -30,7 +30,7 @@ col                 rmb       1                   ; col activada cuando se dio l
 KBI_Handler         proc
                     bset      KBACK.,KBISC        ; Reconocimiento de int y forza la bandera a 0.
                     bclr      KBIE.,KBISC
-                    jsr:4     Delay
+                    jsr:4     Delay1ms
                     lda       PTAD
                     sta       col
 
@@ -205,14 +205,16 @@ kbi_conf            proc
                     rts
 
 ;*******************************************************************************
-
-Delay               proc
-                    psha
-                    lda       #1
-Loop@@              psha
-                    lda       #$ff
-                    dbnza     *
-                    pula
-                    dbnza     Loop@@
-                    pula
+                              #Cycles
+Delay1ms            proc                          ; esperar 16^3 ciclos de reloj (aproximadamente)
+                    pshhx
+                    ldhx      #DELAY@@
+                              #Cycles
+Loop@@              aix       #-1
+                    cphx      #0
+                    bne       Loop@@
+                              #temp :cycles
+                    pulhx
                     rts
+
+DELAY@@             equ       BUS_KHZ-:cycles-:ocycles/:temp
