@@ -23,8 +23,7 @@ var3                rmb       4
 ;*******************************************************************************
 
 Start               proc
-                    ldhx      #STACKTOP           ; initialize the stack pointer
-                    txs
+                    @rsp                          ; initialize the stack pointer
                     cli                           ; enable interrupts
 ;                   bra       MainLoop
 
@@ -37,18 +36,15 @@ Loop@@              !...      Insert your code here
                     sta       var2
                     sta       var3
 
-                    clrh
-                    ldx       #104
+                    ldhx      #104
                     sta       ,x                  ; INDEXADO
 
-                    clrh
-                    ldx       #var1               ; tomando var1 como un numero, no como direccion
+                    ldhx      #var1               ; tomando var1 como un numero, no como direccion
                     sta       ,x                  ; INDEXADO
 
                     sta       var1,x              ; va a guardar lo que este en el acumulador en la posicion #var1=60 + lo que sea X
 
-                    clrh
-                    ldx       #2
+                    ldhx      #2
                     sta       var1,x
 
                     ldx       #1

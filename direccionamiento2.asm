@@ -37,8 +37,7 @@ Loop@@              !...      Insert your code here
                     sta       var_sb              ; DIR
                     sta       var_b               ; EXT
                     sec                           ; INH
-                    clrh
-                    ldx       #104
+                    ldhx      #104
                     txs
                     sta       ,x                  ; IX
                     sta       var_sb,x            ; IX1
@@ -47,7 +46,7 @@ Loop@@              !...      Insert your code here
                     sta       var_b,sp            ; SP2
                     mov       x+,var_sb           ; IX+
                     clrx
-                    cbeq      var_sb,x+,Done@@    ; IX1+
+                    cbeq      var_sb,x+,Cont@@    ; IX1+
                     nop
-Done@@              @cop
+Cont@@              @cop
                     bra       Loop@@
