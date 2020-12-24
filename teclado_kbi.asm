@@ -184,7 +184,7 @@ num9                lda       #9
 
 num0                clra
                     sta       numero
-                    bra       clrfkbi
+;                   bra       clrfkbi
 
 clrfkbi             clra
                     sta       fkbi
