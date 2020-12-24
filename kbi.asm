@@ -6,11 +6,9 @@
 ; subdirectory of the "Freescale CodeWarrior for HC08" program
 ; directory.
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    xref      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
                     #RAM                          ; variable/data section
 ;*******************************************************************************
@@ -26,8 +24,8 @@ estado              rmb       1
 
 kbirutina           proc
                     pshh
-                    bset      KBISC_KBACK,KBISC   ; Reconocimiento de int y forza la bandera a 0.
-                    bclr      KBISC_KBIE,KBISC
+                    bset      KBACK.,KBISC        ; Reconocimiento de int y forza la bandera a 0.
+                    bclr      KBIE.,KBISC
                     bsr:4     Delay
                     brclr     3,PTBD,*
 
@@ -41,7 +39,7 @@ kbirutina           proc
 _1@@                lda       #1
                     sta       estado
 
-Done@@              bset      KBISC_KBIE,KBISC
+Done@@              bset      KBIE.,KBISC
                     pulh
                     rti
 
@@ -49,7 +47,7 @@ Done@@              bset      KBISC_KBIE,KBISC
 
 main
 _Startup            proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
 
                     lda       #$52

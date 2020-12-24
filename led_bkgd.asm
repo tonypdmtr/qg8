@@ -8,15 +8,13 @@
 ; Microcontrolador: MC9S08QG8CPBE
 ; Codigo para encender un LED a traves del pin de BKGD/PTA5
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    xref      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
 
 Start               proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
 ;                   bra       MainLoop

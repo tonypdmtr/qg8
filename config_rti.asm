@@ -1,5 +1,6 @@
-                    #Uses     mc9s08qg8.inc
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
 ; Configuracion del modulo Real-Time Counter
 

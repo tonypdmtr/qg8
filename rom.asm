@@ -9,11 +9,9 @@
 ; Microcontrolador: MC9S08QG8CPBE
 ; Lectura y escritura en EEPROM at28c64b, laboratorio No 3
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    xref      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
                     #RAM
 ;*******************************************************************************
@@ -21,9 +19,11 @@
 data_address        rmb       1
 
 ;*******************************************************************************
+                    #ROM
+;*******************************************************************************
 
 Start               proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
 ;                   bra       MainLoop

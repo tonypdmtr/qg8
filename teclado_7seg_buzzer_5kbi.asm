@@ -10,11 +10,9 @@
 ; Codigo para usar 4 display 7 segmento con el fin de implementar
 ; un reloj y un calendario cuyo cambio esta dado por IRQ
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    xref      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
                     #RAM
 ;*******************************************************************************
@@ -39,8 +37,8 @@ tono                rmb       1
 ;*******************************************************************************
 
 IRQ_Handler         proc
-                    bset      IRQSC_IRQACK,IRQSC  ; Reconocimiento de int y forza la bandera a 0.
-                    bclr      IRQSC_IRQIE,IRQSC
+                    bset      IRQACK.,IRQSC       ; Reconocimiento de int y forza la bandera a 0.
+                    bclr      IRQIE.,IRQSC
                     lda       #1
                     jsr:4     Delay
                     brclr     5,PTAD,*
@@ -52,14 +50,14 @@ IRQ_Handler         proc
                     bra       Done@@
 _1@@                lda       #1
                     sta       estado
-Done@@              bset      IRQSC_IRQIE,IRQSC
+Done@@              bset      IRQIE.,IRQSC
                     rti
 
 ;*******************************************************************************
 
 KBI_Handler         proc
-                    bset      KBISC_KBACK,KBISC   ; Reconocimiento de int y forza la bandera a 0.
-                    bclr      KBISC_KBIE,KBISC
+                    bset      KBACK.,KBISC        ; Reconocimiento de int y forza la bandera a 0.
+                    bclr      KBIE.,KBISC
                     lda       #1
                     jsr:4     Delay
                     lda       PTAD
@@ -82,7 +80,7 @@ Loop@@              brset     0,PTAD,*
 _1@@                lda       #1
                     sta       fkbi
 
-Done@@              bset      KBISC_KBIE,KBISC
+Done@@              bset      KBIE.,KBISC
                     rti
 
 ;*******************************************************************************
@@ -108,7 +106,7 @@ RTC_Handler         proc
 ;*******************************************************************************
 
 Start               proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
                     jsr       ConfigIRQ
                     jsr       ConfigRTC

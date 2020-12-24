@@ -9,11 +9,9 @@
 ; Codigo creado para la practica No 3 donde se muestran los
 ; diferentes modos de direccionamiento
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    xref      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
                     #RAM                          ; variable/data section
 ;*******************************************************************************
@@ -26,7 +24,7 @@ var_b               rmb       1
 ;*******************************************************************************
 
 Start               proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
 ;                   bra       MainLoop
@@ -34,7 +32,7 @@ Start               proc
 ;*******************************************************************************
 
 MainLoop            proc
-Loop@@              ...       Insert your code here
+Loop@@              !...      Insert your code here
                     lda       #2                  ; IMM
                     sta       var_sb              ; DIR
                     sta       var_b               ; EXT
@@ -51,5 +49,5 @@ Loop@@              ...       Insert your code here
                     clrx
                     cbeq      var_sb,x+,Done@@    ; IX1+
                     nop
-Done@@              feed_watchdog
+Done@@              @cop
                     bra       Loop@@

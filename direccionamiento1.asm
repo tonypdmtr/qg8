@@ -6,11 +6,9 @@
 ; subdirectory of the "Freescale CodeWarrior for HC08" program
 ; directory.
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    xref      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
                     #RAM                          ; variable/data section
 ;*******************************************************************************
@@ -25,7 +23,7 @@ var3                rmb       4
 ;*******************************************************************************
 
 Start               proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
                     cli                           ; enable interrupts
 ;                   bra       MainLoop
@@ -33,7 +31,7 @@ Start               proc
 ;*******************************************************************************
 
 MainLoop            proc
-Loop@@              ...       Insert your code here
+Loop@@              !...      Insert your code here
                     lda       #2
                     sta       var1
                     sta       var2
@@ -58,5 +56,5 @@ Loop@@              ...       Insert your code here
                     clrx
                     sta       var11               ; escribe en la parte alta de la variable
 
-                    feed_watchdog
+                    @cop
                     bra       Loop@@

@@ -10,11 +10,9 @@
 ; Codigo para usar 4 display 7 segmento con el fin de implementar
 ; un reloj y un calendario cuyo cambio esta dado por IRQ
 ;*******************************************************************************
-
-                    #Uses     mc9s08qg8.inc
-
-                    XREF      __SEG_END_SSTACK    ; symbol defined by the linker for the end of the stack
-
+                    #ListOff
+                    #Uses     qg8.inc
+                    #ListOn
 ;*******************************************************************************
                     #RAM                          ;MY_ZEROPAGE: SECTION SHORT
 ;*******************************************************************************
@@ -47,8 +45,8 @@ segundos            rmb       1
 
 IRQ_Handler         proc
                     pshh
-                    bset      IRQSC_IRQACK,IRQSC  ; Reconocimiento de int y forza la bandera a 0.
-                    bclr      IRQSC_IRQIE,IRQSC
+                    bset      IRQACK.,IRQSC       ; Reconocimiento de int y forza la bandera a 0.
+                    bclr      IRQIE.,IRQSC
                     bsr:4     retardo
                     brclr     5,PTAD,*
                     lda       #1
@@ -59,7 +57,7 @@ IRQ_Handler         proc
                     bra       Done@@
 _2@@                lda       #1
                     sta       estado
-Done@@              bset      IRQSC_IRQIE,IRQSC
+Done@@              bset      IRQIE.,IRQSC
                     pulh
                     rti
 
@@ -67,7 +65,7 @@ Done@@              bset      IRQSC_IRQIE,IRQSC
 ; Main Program
 
 Start               proc
-                    ldhx      #__SEG_END_SSTACK   ; initialize the stack pointer
+                    ldhx      #STACKTOP           ; initialize the stack pointer
                     txs
                     bsr       Init
                     jsr       conf_IRQ            ;Rutina configuracion de IRQ
@@ -77,7 +75,7 @@ Start               proc
 ;*******************************************************************************
 
 MainLoop            proc
-                    ...       Insert your code here
+                    !...      Insert your code here
 Loop@@              bsr       escritura
                     jsr       verif
                     jsr       verif_digito
