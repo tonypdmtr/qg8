@@ -1,8 +1,6 @@
 #include <hidef.h> /* for EnableInterrupts macro */
 #include "derivative.h" /* include peripheral declarations */
 
-
-
 void retardo(unsigned long delay);
 
 void main(void) {

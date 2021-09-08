@@ -17,7 +17,9 @@
 ; Code labels use CamelCase
 ; Local labels end with @@ (although ASM8 allows @@ to be anywhere inside label)
 ;*******************************************************************************
-
+          #if :version < 1200
+                    #Warning  Some macros are incompatible with ASM8 v{:version(2)} (please update to ASM8 v12 or later)
+          #endif
 #ifmain ;-----------------------------------------------------------------------
                     #Fatal    This file can not be used stand-alone
 #endif ;------------------------------------------------------------------------
@@ -175,19 +177,37 @@ BUS_MHZ             def       BUS_KHZ/1000
           #else ifdef _PA_||_PT_||_PL_
                     #temp1    1
                     mset      0,1024
+          #else ifdef _AC_
+                    #temp1    2
+                    mset      0,1,64
           #else
                     #temp1    6
                     mset      0,512,1024,1536,608,1216,1824
           #endif
                     mdo
                     #temp     ~text[,]{:mloop}~
-          #ifz HZ*10\:temp
-          #if HZ*10/:temp >= 312500
-          #if HZ*10/:temp <= 390625
+          ;;------------------------------------- ;MCU variants with ICG
+          #ifdef ICGC1
+                    #temp2    HZ*7/243000/:temp
+            #if :temp2 >= 4
+              #if :temp2 <= 18
+                #ifz :temp2\2
 FLL_FACTOR          def       :temp
+                #endif
+              #endif
+            #endif
+          ;;-------------------------------------
+          #else
+          ;;------------------------------------- ;MCU variants without ICG
+            #ifz HZ*10\:temp
+              #if HZ*10/:temp >= 312500
+                #if HZ*10/:temp <= 390625
+FLL_FACTOR          def       :temp
+                #endif
+              #endif
+            #endif
           #endif
-          #endif
-          #endif
+          ;;-------------------------------------
                     mloop     :temp1
                     endm
                     @?calc_fll_factor
@@ -229,18 +249,33 @@ RANGE_              equ       RANGE<RANGE_SEL.    ;move RANGE bit to correct bit
 #endif
 ;===============================================================================
           #ifhcs
-            #ifnz FLL_FACTOR
-                    #temp     HZ*10/FLL_FACTOR
-            #ifz HZ*10\FLL_FACTOR
-                    #Message  Trim to IRCLK {:temp(1)} Hz (FLL_FACTOR={FLL_FACTOR})
+            #ifdef ICGC1
+              #ifnz FLL_FACTOR
+                    #temp     HZ*7/243000/FLL_FACTOR
+                #if :temp >= 4
+                  #if :temp <= 18
+                    #ifz :temp\2
+MFD                 equ       :temp
+                    #else
+                    #Warning  Out-of-range MFD {:temp}
+                    #endif
+                  #endif
+                #endif
+              #endif
             #else
+              #ifnz FLL_FACTOR
+                    #temp     HZ*10/FLL_FACTOR
+                #ifz HZ*10\FLL_FACTOR
+                    #Message  Trim to IRCLK {:temp(1)} Hz (FLL_FACTOR={FLL_FACTOR})
+                #else
                     #Warning  Unsupported CPU clock ({HZ(6)} MHz)
-            #endif
-            #if :temp < 312500
+                #endif
+                #if :temp < 312500
                     #Warning  Out-of-range trim value {:temp(1)} Hz
-            #else if :temp > 390625
+                #else if :temp > 390625
                     #Warning  Out-of-range trim value {:temp(1)} Hz
-            #endif
+                #endif
+              #endif
             #endif
           #endif
 
@@ -561,7 +596,7 @@ equ                 macro     Label
 
 ;*******************************************************************************
 ; Macro to allocate a variable to #RAM or #XRAM (if XRAM defined) based on size
-; [Smaller variables (upto LONG size) go into #RAM, everything else into #XRAM]
+; [Smaller vars (upto LONG or MaxSizeForRAM) go to #RAM, everything else to #XRAM]
 
 Var                 macro     Size[,MaxSizeForRAM]
           #ifnb ~2~
@@ -576,7 +611,7 @@ Var                 macro     Size[,MaxSizeForRAM]
           #ifdef XRAM                             ;;when XRAM is defined
             #if ~#1~ > ~text~                     ;;anything above ~TEXT~ goes to XRAM
                     #XRAM
-            #else if :RAM+~#1~ > RAM_END          ;;if RAM is full or not enough, use XRAM
+            #else if :RAM+~#1~ > RAM_END+1        ;;if RAM is full or not enough, use XRAM
                     #XRAM
             #endif
           #endif
@@ -767,13 +802,17 @@ Parms               macro
                     endm
 
 ;*******************************************************************************
-; Check if we're in SPAUTO mode, and issue a warning if not
+; Check if we're in SPAUTO mode, and issue a (user defined) warning if not
 
-_needs_spauto_      macro
+_needs_spauto_      macro     [optional warning]
           #ifspauto
                     mexit
           #endif
+                    mset      #
+          #ifb ~1~
                     mstop     #SPAUTO mode required
+          #endif
+                    #Warning  ~1~
                     endm
 
 ;*******************************************************************************
@@ -787,6 +826,22 @@ _not_x_             macro
           #endif
           #ifparm ~'~,1~'.{:1}~ = x
                     #Error    X-index not allowed (~1~)
+          #endif
+                    mdel      1
+                    mtop
+                    endm
+
+;*******************************************************************************
+; Checks the passed parameter and issues an error if it is SP-indexed
+; (This is meant to be called from other macros -- not to be called directly)
+
+_not_sp_            macro
+                    mset      #' '
+          #ifb ~1~
+                    mexit                         ;;nothing to do
+          #endif
+          #ifparm ~'~,1~'.{:1-1}~ = sp
+                    #Error    SP-index not allowed (~1~)
           #endif
                     mdel      1
                     mtop
@@ -1018,7 +1073,7 @@ swap.s              macro     Variable1 Variable2
 
 PUE                 macro     PortLabel
                     mdef      0,ABCDEFGHIJKLMNOPQRSTUVWXYZ
-          #!if PORT~text.{:loop}.1~ = ~1~
+          #!if PORT~text.{:loop}.1~ = [[~1~
 ~label~             set       PT~text.{:loop}.1~PUE
                     mexit
           #endif
@@ -1126,7 +1181,7 @@ PutNextA            macro     Pointer [DoneOnZero]
 ; Automatically splits offset into as many AIX as needed.  If the number of
 ; bytes required is bigger than ADDHX size, it uses a single ADDHX instead.
 
-aix                 macro   #OffsetConstant
+aix                 macro     #OffsetConstant
           #ifz ~#1~
                     mexit
           #endif
@@ -1328,14 +1383,26 @@ PushV               macro     variable[ SizeOf(var)][ 'newname']
                     mset      0,~text.2.{:text-2}~ ;;after removing quotes
                     mdel      :nn                 ;;parm no longer needed
           #endif
+          #ifb ~2~
+                    #temp     1
+            #ifnum ~1,~
+                    #temp
+            #endif
+            #ifb ~1,~
+                    #temp
+            #endif
+            #ifz :temp
+                    #Warning  Zero size \@~1~\@
+            #endif
+          #endif
           #ifnb ~#~                               ;;immediate mode
                     mreq      1,2:Constant SizeOf(Constant)
             #if ~2~ < 0
                     merror    Negative size (~1~): ~2~
             #endif
-                    #ifnb ~text~
+            #ifnb ~text~
                     mset      0,~text~,~2~
-                    #endif
+            #endif
                     #temp
                     mdo
             #ifz ~#1~>{:mloop-1*8}&$FF
@@ -1379,19 +1446,19 @@ PushV               macro     variable[ SizeOf(var)][ 'newname']
                     mset      0,~text~,~2~
                     #endif
           #if ~2~ = 1                             ;;single-byte variable case
-          #ifb ~1.1.1~ = .                        ;;but not for pointers
-            #ifparm ~'~,1~'.1.3~ = ,sp            ;;for SP and SPX only
-              #iftos ~1,~                         ;;if at TOS, special case
+            #ifb ~1.1.1~ = .                      ;;but not for pointers
+              #ifparm ~'~,1~'.1.3~ = ,sp          ;;for SP and SPX only
+                #iftos ~1,~                       ;;if at TOS, special case
                     pula                          ;;A = TOS value
                     psha                          ;;put it back the way it was
                     psha      ~text~
                     mexit
+                #endif
               #endif
-            #endif
                     lda       ~1~
                     psha      ~text~
                     mexit
-          #endif
+            #endif
           #endif
                     #push                         ;;save current X offset etc.
           #ifb ~,1~ = ,x                          ;;only if not X-indexed
@@ -1422,6 +1489,18 @@ PullV               macro     Variable[ SizeOf(Variable)]
                     mset      #' '
                     mreq      1:Variable[ SizeOf(Variable)]
                     @@_not_#_ ~1~
+          #ifb ~2~
+                    #temp     1
+            #ifnum ~1,~
+                    #temp
+            #endif
+            #ifb ~1,~
+                    #temp
+            #endif
+            #ifz :temp
+                    #Warning  Zero size \@~1~\@
+            #endif
+          #endif
           #ifnz ::~1,~
                     mdef      2,{::~1,~}
           #endif
@@ -1431,16 +1510,16 @@ PullV               macro     Variable[ SizeOf(Variable)]
           #endif
                     @@Msg     ~0~ ~1~ ({~2~*8}-bit)
           #if ~2~ = 1                             ;;single-byte variable case
-          #ifb ~1.1.1~ = .                        ;;but not for pointers
-            #ifparm ~'~,1~'.1.3~ = ,sp            ;;for SP and SPX only
-              #iftos ~1,~                         ;;if at TOS, special case
+            #ifb ~1.1.1~ = .                      ;;but not for pointers
+              #ifparm ~'~,1~'.1.3~ = ,sp          ;;for SP and SPX only
+                #iftos ~1,~                       ;;if at TOS, special case
                     mstop     ~0~ to same stack location!
+                #endif
               #endif
-            #endif
                     pula
                     sta       ~1~
                     mexit
-          #endif
+            #endif
           #endif
                     #push                         ;;save current X offset etc.
           #ifb ~,1~ = ,x                          ;;only if not X-indexed
@@ -1771,6 +1850,30 @@ mova.s              macro     [#]Source Destination
           #endif
                     sta       ~2,~+{:mloop-1}~,2~
                     mloop     ::~2,~
+                    endm
+
+;*******************************************************************************
+; MOVX emulation of a hypothetical instruction that will use the same X-index to
+;      move a single byte from source X-offset to dest X-offset and advance the
+;      HX index afterwards. It will behave as an atomic instruction.
+; Example:          clrhx
+;                   lda       #10                 ;number of bytes to copy
+; Loop@@            @movx     EEPROM,RAM
+;                   dbnza     Loop@@
+
+movx                macro     source_offset,destination_offset
+                    @@_not_x_ ~1~ ~2~
+                    @@_not_sp_ ~1~ ~2~
+                    psha
+                    tpa
+                    psha
+                    sei
+                    lda       ~#1~,x
+                    sta       ~#2~,x
+                    aix       #1
+                    pula
+                    tap
+                    pula
                     endm
 
 ;*******************************************************************************
@@ -2224,7 +2327,11 @@ _bset_              macro     PinName
               #ifnum ~1~
                     ora       #1<~1~
               #else
+                #ifdef ~1'.'~_
                     ora       #~1'.'~_
+                #else
+                    ora       #@~1'.'~
+                #endif
               #endif
                     sta       ~2~
                     mexit
@@ -2232,12 +2339,20 @@ _bset_              macro     PinName
                     !bset     ~@~
                     mexit
           #endif
-          #ifz ~1~&$FFFFFF00
+          #ifz [[~1~&$FFFFFF00
+            #ifdef ~1~.
                     !bset     ~1~.,~1~
+            #else
+                    !bset     ~1~
+            #endif
                     mexit
           #endif
                     lda       ~1~
+          #ifdef ~1~_
                     ora       #~1~_
+          #else
+                    ora       #@~1~
+          #endif
                     sta       ~1~
                     endm
 
@@ -2252,7 +2367,11 @@ _bclr_              macro     PinName
               #ifnum ~1~
                     and       #1<~1~^$FF
               #else
+                #ifdef ~1'.'~_
                     and       #~1'.'~_^$FF
+                #else
+                    and       #@~1'.'~^$FF
+                #endif
               #endif
                     sta       ~2~
                     mexit
@@ -2260,12 +2379,20 @@ _bclr_              macro     PinName
                     !bclr     ~@~
                     mexit
           #endif
-          #ifz ~1~&$FFFFFF00
+          #ifz [[~1~&$FFFFFF00
+            #ifdef ~1~.
                     !bclr     ~1~.,~1~
+            #else
+                    !bclr     ~1~
+            #endif
                     mexit
           #endif
                     lda       ~1~
+          #ifdef ~1~_
                     and       #~1~_^$FF
+          #else
+                    and       #@~1~^$FF
+          #endif
                     sta       ~1~
                     endm
 
@@ -2281,7 +2408,11 @@ bset                macro     PinName
               #ifnum ~1~
                     ora       #1<~1~
               #else
+                #ifdef ~1'.'~_
                     ora       #~1'.'~_
+                #else
+                    ora       #@~1'.'~
+                #endif
               #endif
                     sta       ~2~
                     pula
@@ -2290,13 +2421,21 @@ bset                macro     PinName
                     !bset     ~@~
                     mexit
           #endif
-          #ifz ~1~&$FFFFFF00
+          #ifz [[~1~&$FFFFFF00
+            #ifdef ~1~.
                     !bset     ~1~.,~1~
+            #else
+                    !bset     ~1~
+            #endif
                     mexit
           #endif
                     psha
                     lda       ~1~
+          #ifdef ~1~_
                     ora       #~1~_
+          #else
+                    ora       #@~1~
+          #endif
                     sta       ~1~
                     pula
                     endm
@@ -2313,7 +2452,11 @@ bclr                macro     PinName
               #ifnum ~1~
                     and       #1<~1~^$FF
               #else
+                #ifdef ~1'.'~_
                     and       #~1'.'~_^$FF
+                #else
+                    and       #@~1'.'~^$FF
+                #endif
               #endif
                     sta       ~2~
                     pula
@@ -2322,13 +2465,21 @@ bclr                macro     PinName
                     !bclr     ~@~
                     mexit
           #endif
-          #ifz ~1~&$FFFFFF00
+          #ifz [[~1~&$FFFFFF00
+            #ifdef ~1~.
                     !bclr     ~1~.,~1~
+            #else
+                    !bclr     ~1~
+            #endif
                     mexit
           #endif
                     psha
                     lda       ~1~
+          #ifdef ~1~_
                     and       #~1~_^$FF
+          #else
+                    and       #@~1~^$FF
+          #endif
                     sta       ~1~
                     pula
                     endm
@@ -2342,8 +2493,12 @@ brset               macro     PinName,Address
                     !brset    ~@~
                     mexit
           #endif
-          #ifz ~1~&$FFFFFF00
+          #ifz [[~1~&$FFFFFF00
+            #ifdef ~1~.
                     !brset    ~1~.,~1~,~2~
+            #else
+                    !brset    ~1~,~2~
+            #endif
                     mexit
           #endif
           #ifparm ~2~ = *
@@ -2351,7 +2506,11 @@ brset               macro     PinName,Address
           #endif
                     psha
                     lda       ~1~
+          #ifdef ~1~_
                     and       #~1~_
+          #else
+                    and       #@~1~
+          #endif
                     pula
                     bne       ~2~
                     endm
@@ -2365,8 +2524,12 @@ brclr               macro     PinName,Address
                     !brclr    ~@~
                     mexit
           #endif
-          #ifz ~1~&$FFFFFF00
+          #ifz [[~1~&$FFFFFF00
+            #ifdef ~1~.
                     !brclr    ~1~.,~1~,~2~
+            #else
+                    !brclr    ~1~,~2~
+            #endif
                     mexit
           #endif
           #ifparm ~2~ = *
@@ -2374,7 +2537,11 @@ brclr               macro     PinName,Address
           #endif
                     psha
                     lda       ~1~
+          #ifdef ~1~_
                     and       #~1~_
+          #else
+                    and       #@~1~
+          #endif
                     pula
                     beq       ~2~
                     endm
@@ -2475,8 +2642,8 @@ ByteX10             macro     Variable
                     call      RegAx10
                     mexit
             #endif
-            #if :mindex > 2
-                    #Hint     Consider size optimization #using lib/convert/regax10.sub
+            #if :index > 2
+                    #Hint     Consider \@#Uses lib/convert/regax10.sub\@ optimization
             #endif
                     pshx
                     ldx       #10
@@ -2492,14 +2659,39 @@ ByteX10             macro     Variable
                     #spauto   :sp
                     psha
                     lda       ~1~
-                    pshx
-                    ldx       #10
-                    mul
-                    lsrx                          ;CCR[C] = 9th bit of result
-                    pulx
+                    @@~0~
                     sta       ~1~
                     pula
                     #pull
+                    endm
+
+;*******************************************************************************
+; Run a section of code with interrupts disabled; then restore to previous state
+
+NoInts              macro
+                    @@_needs_spauto_ Stack indexing may fail if not in #spauto mode
+                    psha
+                    tpa
+                    sei
+                    msuspend
+                    tap
+                    pula
+                    endm
+
+;*******************************************************************************
+; Assign name to the non-volatile EEPROM image of an existing EE_[X]BLOCK variable
+
+eeprom              macro     Name,variable
+          #ifndef ~2~
+                    mexit
+          #endif
+          #ifdef EE_XBLOCK
+            #if ~2~ >= EE_XBLOCK
+~1~                 equ       ~2~-EE_XBLOCK+EEPROM+::EE_BLOCK,::~2~
+                    mexit
+            #endif
+          #endif
+~1~                 equ       ~2~-EE_BLOCK+EEPROM,::~2~
                     endm
 
 ;*******************************************************************************
@@ -2603,7 +2795,7 @@ MAX_OS_CALLS        def       64                  ;default room for OS calls (68
 ;-------------------------------------------------------------------------------
 ?                   macro
                     mswap     1,:loop
-          #ifdef ~1~&~1~_END
+          #ifdef ~1~&&~1~_END
             #if ~1~_END > ~1~
                     #Message  ~1~~'..........:'.1.{10-:1}~ {~1~(h)}-{~1~_END(h)} ({~1~_END-~1~+1} bytes)
             #endif
@@ -2693,7 +2885,11 @@ FLASH_CLK_VALUE     equ       :temp
 ;-------------------------------------------------------------------------------
 ;-------------------------------------------------------------------------------
           #ifdef SIMHCS
-                    #Hint     SIMULATOR mode (do NOT distribute)
+                    #Hint     +------------------------------------+
+                    #Hint     | SIMULATOR mode (do NOT distribute) |
+                    #Hint     +------------------------------------+
           #else ifdef DEBUG
-                    #Hint     DEBUG/BDM mode (do NOT distribute)
+                    #Hint     +------------------------------------+
+                    #Hint     | DEBUG/BDM mode (do NOT distribute) |
+                    #Hint     +------------------------------------+
           #endif

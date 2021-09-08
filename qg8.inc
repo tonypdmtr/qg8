@@ -13,11 +13,13 @@
                     #NoMMU                        ;MMU not available
 #ifdef BOOT
                     #Message  TBoot pre-loaded
-  #ifexists tboot.exp
+          #ifexists tboot_qg8.exp
+                    #Uses     tboot_qg8.exp
+          #else ifexists tboot.exp
                     #Uses     tboot.exp
-  #else
+          #else
                     #Uses     tboot/tboot_qg8.exp
-  #endif
+          #endif
 
 #endif
 
@@ -798,8 +800,6 @@ NVOPT               equ       $FFBF,1             ;NV flash options byte
 
 ; **** END OF ORIGINAL DEFINITIONS *********************************************
 
-_9S08QG8_           def       *                   ;Tells us this INCLUDE has been used
-
 TEMPERATURE_CHANNEL equ       26                  ;Channel for internal temperature
 BANDGAP_CHANNEL     equ       27                  ;Channel for internal bandgap
 BANDGAP_VOLTAGE     def       1200                ;typical bandgap voltage in mV
@@ -853,7 +853,7 @@ TRUE_ROM            equ       $E000
 
 EEPROM              def       TRUE_ROM            ;start of flash used as EEPROM (main ROM)
 EEPROM              align     FLASH_PAGE_SIZE
-EEPROM_END          equ       EEPROM+FLASH_DATA_SIZE-1
+EEPROM_END          def       EEPROM+FLASH_DATA_SIZE-1
 
 #ifdef BOOTROM
  #if EEPROM_END >= BOOTROM
