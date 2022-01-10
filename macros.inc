@@ -164,6 +164,7 @@
 ;*           : 21.11.26 v2.37 Prepend `sema` if missing in fLock[Attempt]/fUnlock
 ;*           : 21.12.01 v2.38 Simplified yet improved LCDFCS macro definition
 ;*           : 21.12.08 v2.39 BugFix: Off-by-one error in LCDFCS simplification
+;*           : 22.01.04 v2.41 BugFix: Toggle should use low word of pin to avoid warnings
 ;*******************************************************************************
 
                     #Exit     _MACROS_
@@ -2069,13 +2070,13 @@ Toggle              macro     PinName[,PinName]*
                     psha
                     mdo
                     mswap     1,:mloop
-                    lda       ~1~
+                    lda       [[~1~
           #ifdef ~1~_
                     eor       #~1~_               ;toggle pin
           #else
                     eor       #@~1~               ;toggle pin
           #endif
-                    sta       ~1~
+                    sta       [[~1~
                     mloop     :n
                     pula
                     endm
